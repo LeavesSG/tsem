@@ -1,7 +1,8 @@
 // deno-lint-ignore-file no-explicit-any no-this-alias
 import { arrayLikeOr } from "../arr-like/bit-operation.ts";
-import { ConstructorType, ConsTuple, InstanceIntersection } from "../hiearchy/constructor.ts";
-import { applyMixins } from "../hiearchy/mixin.ts";
+import { Ordering, PartialCmp } from "../cmp/mod.ts";
+import { ConstructorType, ConsTuple, InstanceIntersection } from "../hierarchy/constructor.ts";
+import { applyMixins } from "../hierarchy/mixin.ts";
 
 type ArchKey = Uint32Array;
 
@@ -10,7 +11,7 @@ abstract class ArchMixin {
     abstract archKey: ArchKey;
 }
 
-export class Architecture<T = unknown> {
+export class Architecture<T = unknown> implements PartialCmp {
     static consCache = new WeakMap<ConstructorType, ArchKey>();
     static archCache = new Map<string, Architecture>();
     static consCounter = 0;
@@ -87,7 +88,7 @@ export class Architecture<T = unknown> {
         >;
     }
 
-    public include(other: Architecture) {
+    public includes(other: Architecture) {
         const otherKey = other.archKey;
         const or = arrayLikeOr(this.archKey, otherKey);
         return or.toString() === otherKey.toString();
@@ -97,5 +98,17 @@ export class Architecture<T = unknown> {
         const otherKey = other.archKey;
         const or = arrayLikeOr(this.archKey, otherKey);
         return or.toString() === this.archKey.toString();
+    }
+
+    partialCmp(other: Architecture) {
+        const thisKey = this.archKey;
+        const otherKey = other.archKey;
+        const orStr = arrayLikeOr(thisKey, otherKey).toString();
+        const thisKeyStr = thisKey.toString();
+        const otherKeyStr = otherKey.toString();
+        if (thisKeyStr === otherKeyStr) return Ordering.Equal;
+        else if (orStr === thisKeyStr) return Ordering.Less;
+        else if (orStr === otherKeyStr) return Ordering.Greater;
+        return undefined;
     }
 }
