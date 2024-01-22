@@ -1,0 +1,13 @@
+{
+    "name": "@natsuha_sg/tsem",
+    "version": "0.0.1",
+    "description": "A TypeScript Extended Monorepo.",
+    "main": "dist/lib.js",
+    "scripts": {},
+    "keywords": ["TypeScript", "Utils"],
+    "author": {
+        "name": "Tianyi_Liu",
+        "email": "l.lty@outlook.com"
+    },
+    "license": "ISC"
+}

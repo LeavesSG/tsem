@@ -1,0 +1,15 @@
+{
+    "name": "tsecs",
+    "version": "1.0.0",
+    "description": "A TypeScript ECS implementation.",
+    "main": "index.ts",
+    "scripts": {
+        "check": "tsc --noEmit"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "typescript": "latest"
+    }
+}

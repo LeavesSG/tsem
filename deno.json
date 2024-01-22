@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "noUnusedParameters": true,
+        "noErrorTruncation": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+
+        "lib": ["deno.ns", "dom", "esnext"]
+    },
+    "tasks": {
+        "build": "deno run -A ./build/esbuid.ts"
+    }
+}
