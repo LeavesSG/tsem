@@ -1,2 +1,2 @@
-export { CarousalIter, type CarousalIterOptions } from "./carousal-iter.ts";
+export { CarousalIter, type CarousalIterCfg } from "./carousal-iter.ts";
 export { Carousal } from "./carousal.ts";

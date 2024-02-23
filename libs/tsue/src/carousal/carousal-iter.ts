@@ -1,33 +1,41 @@
-export interface CarousalIterOptions {
+export interface CarousalIterCfg {
+    /** Reverse on emit direction after each row. */
     reverse: boolean;
+    /** Max iteration count. */
     maxIter: number;
 }
 
-export const DEFAULT_OPTIONS: CarousalIterOptions = {
+export const CAROUSAL_INTER_DEFAULT_CFG: CarousalIterCfg = {
     reverse: false,
     maxIter: Infinity,
 };
 
 type ConstructorParameters<T, TReturn, TNext> = [
     iterator: Iterator<T, TReturn, TNext>,
-    options?: Partial<CarousalIterOptions>,
+    cfg?: Partial<CarousalIterCfg>,
 ];
 
-export class CarousalIter<T, TReturn = any, TNext = undefined>
-    implements Iterator<T, TReturn, TNext> {
+/**
+ * An util class create a repeatable iterator from a given iterator.
+ */
+export class CarousalIter<T, TReturn = unknown, TNext = undefined> implements Iterator<T, TReturn, TNext> {
+    /** Source iterator */
     private iter: Iterator<T, TReturn, TNext>;
+    /** Emit history */
     private history: T[] = [];
+    /** Iteration count */
     private count = 1;
-    private opt: CarousalIterOptions;
+    /** Configuration */
+    private cfg: CarousalIterCfg;
 
     constructor(
         ...args: ConstructorParameters<T, TReturn, TNext>
     ) {
-        const [iterator, options] = args;
+        const [iterator, cfg] = args;
         this.iter = iterator;
-        this.opt = {
-            ...DEFAULT_OPTIONS,
-            ...options,
+        this.cfg = {
+            ...CAROUSAL_INTER_DEFAULT_CFG,
+            ...cfg,
         };
     }
 
@@ -37,8 +45,8 @@ export class CarousalIter<T, TReturn = any, TNext = undefined>
         return new this(...args);
     }
 
-    public makeIter() {
-        if (this.opt.reverse) {
+    private expandIter() {
+        if (this.cfg.reverse) {
             this.history.reverse();
         }
         this.iter = this.history[Symbol.iterator]() as Iterator<
@@ -47,7 +55,11 @@ export class CarousalIter<T, TReturn = any, TNext = undefined>
             TNext
         >;
         this.history = [];
-        if (this.opt.reverse) this.next();
+
+        if (this.cfg.reverse) {
+            this.next();
+        }
+
         this.count++;
     }
     next(): IteratorResult<T, TReturn> {
@@ -55,8 +67,8 @@ export class CarousalIter<T, TReturn = any, TNext = undefined>
         if (!next.done) {
             this.history.push(next.value);
             return next;
-        } else if (this.count < this.opt.maxIter) {
-            this.makeIter();
+        } else if (this.count < this.cfg.maxIter) {
+            this.expandIter();
             return this.next();
         }
         return next;

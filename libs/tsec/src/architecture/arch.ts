@@ -109,6 +109,6 @@ export class Architecture<T = unknown> implements PartialCmp {
         if (thisKeyStr === otherKeyStr) return Ordering.Equal;
         else if (orStr === thisKeyStr) return Ordering.Less;
         else if (orStr === otherKeyStr) return Ordering.Greater;
-        return undefined;
+        return void 0;
     }
 }

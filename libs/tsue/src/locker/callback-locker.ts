@@ -1,65 +1,92 @@
 import { FunctionType } from "../func/func.ts";
 import { tryAwait } from "../try-await/try-await.ts";
 
-interface LockedCallbackOptions {
+export interface LockedCallbackCfg {
     /**
-     * Will it skip the invocation of the callback function when locked
-     * or keep all the invocations until unlock.
+     * Max amount of invocations of given callback waiting in queue. Further invocations will
+     * be neglected instead of waited.
      */
     maxInQueue: number;
 }
 
-const DEFAULT_OPTIONS: LockedCallbackOptions = {
+export const LOCKED_CALLBACK_DEFAULT_CFG: LockedCallbackCfg = {
     maxInQueue: Infinity,
 };
 
-export class LockedCallback<T extends FunctionType> {
-    private cb;
-    private opt;
+type ConstructorParameters<T extends FunctionType> = [
+    callback: T,
+    cfg?: Partial<LockedCallbackCfg>,
+];
 
-    constructor(callback: T, options?: Partial<LockedCallbackOptions>) {
+/**
+ * An util class create a copy of given callback, which allows user to
+ * delay its invocation until unlock.
+ * # Example
+ * ```typescript
+ * const callback = () => console.log("invoke");
+ * const locked = new LockedCallback(callback);
+ * const unlock = locked.lockup();
+ * const res = locked.locked(); // won't log anything
+ * unlock();
+ * await res;   // log "invoke"
+ * ```
+ */
+export class LockedCallback<T extends FunctionType> {
+    /** Callback that has been locked from invocation. */
+    private cb;
+    /** Locked callback cfg */
+    private cfg;
+
+    constructor(...args: ConstructorParameters<T>) {
+        const [callback, cfg] = args;
         this.cb = callback;
-        this.opt = {
-            ...DEFAULT_OPTIONS,
-            ...options,
+        this.cfg = {
+            ...LOCKED_CALLBACK_DEFAULT_CFG,
+            ...cfg,
         };
     }
 
-    static from<T extends FunctionType>(callback: T, options?: Partial<LockedCallbackOptions>) {
-        return new this<T>(callback, options);
+    static from<T extends FunctionType>(...args: ConstructorParameters<T>) {
+        return new this<T>(...args);
     }
 
+    /** Id of invocation */
     private callId = 0;
-    private queue = new Set();
 
-    get locked(): (...args: Parameters<T>) => ReturnType<T> | Promise<ReturnType<T> | undefined> {
-        const { maxInQueue } = this.opt;
+    /** Locked callback */
+    get locked(): (...args: Parameters<T>) => Promise<ReturnType<T> | undefined> {
+        const { maxInQueue } = this.cfg;
 
         return async (...args) => {
-            const id = this.callId++;
-            if (this.lockChain.size === 0) return this.cb(...args) as ReturnType<T>;
-            if (maxInQueue < this.queue.size) return void 0;
-            this.queue.add(id);
+            // If cb is never locked, invoke cb instantly.
+            if (this.lockChain.size === 0) {
+                return this.cb(...args) as ReturnType<T>;
+            }
+
+            // if invocation count larger than max calls in queue, ignore.
+            if (maxInQueue < ++this.callId) {
+                return void 0;
+            }
+
+            // wait in queue
             await tryAwait(this.lockChain);
-            this.queue.delete(id);
+            this.callId--;
             return this.cb(...args) as ReturnType<T>;
         };
     }
 
-    private keyId = 0;
+    /** Collection of all active locks */
     public lockChain = new Set<Promise<void>>();
-    public keyChain = new Map<number, FunctionType>();
 
-    private makeKeyAndLock() {
-        const id = this.keyId++;
+    /**
+     * Lock up the callback invocation, return the function to unlock it.
+     */
+    lockup() {
+        let unlock: (value: void | PromiseLike<void>) => void;
         const lock = new Promise<void>((res) => {
-            this.keyChain.set(id, res);
+            unlock = res;
         });
         this.lockChain.add(lock);
-        return this.keyChain.get(id)!;
-    }
-
-    lockup() {
-        return this.makeKeyAndLock();
+        return unlock!;
     }
 }
