@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.201.0/assert/assert_equals.ts";
-import { Ordering } from "../cmp/mod.ts";
+import { Ordering } from "../traits/mod.ts";
 import { Architecture } from "./arch.ts";
 
 Deno.test("Architecture", () => {

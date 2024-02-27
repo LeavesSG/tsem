@@ -8,4 +8,5 @@ export * from "./carousal/mod.ts";
 // export * from "./locker/mod.ts";
 // export * from "./try-await/mod.ts";
 
-// export * from "./pattern/mod.ts";
+export * from "./color/mod.ts";
+export * from "./pattern/mod.ts";

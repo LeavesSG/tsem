@@ -1,4 +1,4 @@
-import { debugPrint } from "../debug/debug-print.ts";
+import { debugPrint } from "../shared/debug/debug-print.ts";
 
 export class IndexTracing<const T = unknown> {
     obj?: T;

@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-explicit-any no-this-alias
 import { arrayLikeOr } from "../arr-like/bit-operation.ts";
-import { Ordering, PartialCmp } from "../cmp/mod.ts";
 import { ConstructorType, ConsTuple, InstanceIntersection } from "../hierarchy/constructor.ts";
 import { applyMixins } from "../hierarchy/mixin.ts";
+import { Ordering, PartialCmp } from "../traits/cmp.ts";
 
 type ArchKey = Uint32Array;
 

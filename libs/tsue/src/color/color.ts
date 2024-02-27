@@ -1,17 +1,27 @@
-import { NotImplementedError } from "../errors/not-implement.ts";
-import { Pattern } from "../pattern/mod.ts";
-import { Err, isOk, Ok, Result } from "../result/mod.ts";
-import { Vec4 } from "../vecn/vecn.ts";
-import { ColorForm, ColorPatterns } from "./color-type.ts";
+export enum ColorForm {
+    HEX,
+    RGBA,
+}
+type Vec4<T> = [T, T, T, T];
+type ColorHexString = `#${string}`;
+type ColorRGBString = `rgb${string}`;
+type ColorRGBAString = `rgba(${string})`;
 
-export class Color extends Array<number> implements Vec4<number> {
+export type ValidColorExpr = ColorHexString | ColorRGBString | ColorRGBAString;
+export const ColorPatterns = {
+    [ColorForm.HEX]: (expr: string) => /^#[\da-fA-F]{3,8}$/.test(expr),
+    [ColorForm.RGBA]: (expr: string) =>
+        [/^rgb\((\d{1,3},\s*){2}\d{1,3}\)$/, /^rgba\((\d{1,3},\s*){3}\d{1,3}\)$/].some((pattern) => pattern.test(expr)),
+};
+
+export class Color extends Array<number> {
     0: number;
     1: number;
     2: number;
     3: number;
     declare length: 4;
 
-    constructor(r: number = 1, g: number = 1, b: number = 1, a: number = 1) {
+    constructor(r = 1, g = 1, b = 1, a = 1) {
         super(r, g, b, a);
         this.r = r;
         this.g = g;
@@ -47,30 +57,30 @@ export class Color extends Array<number> implements Vec4<number> {
         this[3] = value;
     }
 
-    static fromString(expr: unknown) {
-        if (Pattern.from("string").match(expr)) {
+    static override from(expr: unknown) {
+        if (Array.isArray(expr) && expr.every((val) => typeof val === "number" && val >= 0 && val <= 1)) {
+            return new this(...expr);
+        }
+        if (typeof expr === "string") {
             const res = this.tryParse(expr);
-
-            if (isOk(res)) {
-                return res.unwrap();
-            }
+            if (res) return res;
         }
         return new this();
     }
 
-    static tryParse(expr: string, form?: ColorForm): Result<Color, Error> {
+    static tryParse(expr: string, form?: ColorForm) {
         if (form) {
-            if (ColorPatterns[form].match(expr)) {
-                return Ok(this.parse(expr, form));
+            if (ColorPatterns[form](expr)) {
+                return this.parse(expr, form);
             }
         } else {
-            for (const [key, value] of Object.entries(ColorPatterns)) {
-                if (value.match(expr)) {
-                    return Ok(this.parse(expr, Number(key)));
+            for (const [key, matchFunc] of Object.entries(ColorPatterns)) {
+                if (matchFunc(expr)) {
+                    return this.parse(expr, Number(key));
                 }
             }
         }
-        return Err("Invalid Expression!");
+        return undefined;
     }
 
     static parse(expr: string, form: ColorForm): Color {
@@ -80,9 +90,6 @@ export class Color extends Array<number> implements Vec4<number> {
             }
             case ColorForm.RGBA: {
                 return this.fromRGBAString(expr);
-            }
-            case ColorForm.HSLA: {
-                throw new NotImplementedError();
             }
         }
     }
@@ -99,11 +106,14 @@ export class Color extends Array<number> implements Vec4<number> {
         switch (sliced.length) {
             case 3:
             case 4:
-                r = sliced.slice(0, 1), g = sliced.slice(1, 2), b = sliced.slice(2, 3), a = sliced.slice(3, 4);
+                [r, g, b, a] = sliced;
                 break;
             case 6:
             case 8:
-                r = sliced.slice(0, 2), g = sliced.slice(2, 4), b = sliced.slice(4, 6), a = sliced.slice(6, 8);
+                r = sliced.slice(0, 2);
+                g = sliced.slice(2, 4);
+                b = sliced.slice(4, 6);
+                a = sliced.slice(6, 8);
                 break;
             default:
                 [r, g, b, a] = ["f", "f", "f", "f"];
@@ -115,9 +125,10 @@ export class Color extends Array<number> implements Vec4<number> {
     static fromRGBAString(expr: string) {
         if (expr.includes("rgba")) {
             const sliced = expr.slice(5, -1);
-            const [r, g, b, a] = sliced.split(",").map((d) => Math.min(Number(d) / 255, 1)).concat(
-                1,
-            );
+            const [r, g, b, a] = sliced
+                .split(",")
+                .map((d) => Math.min(Number(d) / 255, 1))
+                .concat(1);
             return new Color(r, g, b, a);
         } else {
             const sliced = expr.slice(4, -1);
@@ -135,16 +146,20 @@ export class Color extends Array<number> implements Vec4<number> {
     }
 
     toHexString() {
-        let hexString = `#${this.toIntArray().map((int) => int.toString(16).padStart(2, "0")).join("")}`;
+        let hexString = `#${
+            this.toIntArray()
+                .map((int) => int.toString(16).padStart(2, "0"))
+                .join("")
+        }`;
         if (hexString.slice(7, 9) === "ff") hexString = hexString.slice(0, -2);
-        return hexString;
+        return hexString as ColorHexString;
     }
 
     toRGBString() {
-        return `rgb(${this.toIntArray().slice(0, -1).join(", ")})`;
+        return `rgb(${this.toIntArray().slice(0, -1).join(", ")})` as ColorRGBString;
     }
 
     toRGBAString() {
-        return `rgba(${this.toIntArray().join(", ")})`;
+        return `rgba(${this.toIntArray().join(", ")})` as ColorRGBAString;
     }
 }

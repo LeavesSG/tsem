@@ -1,6 +1,5 @@
-import { debugPrint } from "../debug/debug-print.ts";
 import { IndexTracing } from "../obj-path/obj-path.ts";
-import { Debug } from "../traits/debug.ts";
+import { debugPrint } from "../shared/debug/debug-print.ts";
 import { FromPattern } from "./transform.ts";
 import { PatternBuf, PatternType } from "./variants.ts";
 import { ArrayPatternKey, isArrayPattern } from "./variants/array.ts";
@@ -13,7 +12,7 @@ import { isStructPattern, StructPattern } from "./variants/struct.ts";
 import { FromTuplePattern, isTuplePattern, TuplePattern } from "./variants/tuple.ts";
 import { FromUnionPattern, isUnionPattern, UnionPatternKey } from "./variants/union.ts";
 
-export class Pattern<B = unknown, T extends PatternType = PatternType> implements Debug {
+export class Pattern<B = unknown, T extends PatternType = PatternType> {
     type: T;
     buf: PatternBuf<T>;
     constructor(buf: PatternBuf<T>, pattern: T) {

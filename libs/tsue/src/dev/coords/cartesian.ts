@@ -1,4 +1,4 @@
-import { Vec3 } from "../vecn/vecn.ts";
+import { Vec3 } from "../../vecn/vecn.ts";
 import { AbstractCoords3, AxisType } from "./abstract-coords3.ts";
 
 export class CartesianCoords extends AbstractCoords3 {

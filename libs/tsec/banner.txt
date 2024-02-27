@@ -1,4 +1,0 @@
-/**
- * TypeScript Expanded Core.
- * @author Tianyi Liu <l.lty@outlook.com>
-*/
