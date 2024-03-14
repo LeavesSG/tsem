@@ -2,11 +2,13 @@ import type { Tree } from "./tree.ts";
 
 type GetChildren<T> = (node: T) => T[];
 
-/**
- * 判断节点是否有子节点并辅助类型推断的工具方法
- */
-export function hasChildren<T extends object>(node: T): node is T & { children: [T, ...T[]] } {
-    return ("children" in node && Array.isArray(node.children) && node.children.length > 0) || false;
+export function hasChildren<T extends object, U extends keyof T>(
+    node: T,
+    propName = "children" as U,
+): node is T & { children: [T, ...T[]] } {
+    if (!(propName in node)) return false;
+    const children = node[propName as unknown as keyof T];
+    return Array.isArray(children);
 }
 
 /**

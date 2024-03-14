@@ -1,4 +1,4 @@
-import { debugPrint } from "../shared/debug/debug-print.ts";
+import { Debug } from "../traits/mod.ts";
 
 export class IndexTracing<const T = unknown> {
     obj?: T;
@@ -50,7 +50,7 @@ export class IndexTracing<const T = unknown> {
     }
 
     tryPrintValue() {
-        return debugPrint(this.getValue());
+        return Debug.debug(this.getValue());
     }
 }
 

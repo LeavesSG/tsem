@@ -18,4 +18,11 @@ export class Pipeline<const T extends Pipes> {
     run(input: PipelineInput<T>) {
         return this.processes.reduce((prev, curr) => (curr as any)(prev), input) as PipelineOutput<T>;
     }
+
+    add<O>(process: Process<PipelineOutput<T>, O>) {
+        const processes = [...this.processes, process] as
+            & [...T, Process<PipelineOutput<T>, O>]
+            & PipelineValidation<[...T, Process<PipelineOutput<T>, O>]>;
+        return new Pipeline(...processes);
+    }
 }

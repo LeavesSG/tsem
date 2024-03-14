@@ -8,3 +8,5 @@ export type PrimitiveTypeDict = {
     undefined: undefined;
     symbol: symbol;
 };
+
+export type Primitive = boolean | string | number | bigint | undefined | symbol;

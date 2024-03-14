@@ -21,8 +21,8 @@ async function buildApp(appName: string) {
         outfile: `dist/${appName}.js`,
         entryPoints: [`libs/${appName}/src/lib.ts`],
         target: [
-            'esnext',
-          ],
+            "esnext",
+        ],
         banner: {
             js: await tryGetAppBanner(appName),
         },

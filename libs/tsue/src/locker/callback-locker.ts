@@ -1,5 +1,4 @@
 import { FunctionType } from "../func/func.ts";
-import { tryAwait } from "../try-await/try-await.ts";
 
 export interface LockedCallbackCfg {
     /**
@@ -69,7 +68,7 @@ export class LockedCallback<T extends FunctionType> {
             }
 
             // wait in queue
-            await tryAwait(this.lockChain);
+            await Promise.all(this.lockChain);
             this.callId--;
             return this.cb(...args) as ReturnType<T>;
         };

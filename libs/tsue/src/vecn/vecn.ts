@@ -7,7 +7,7 @@ export type VecN<T, N extends number> =
         length: N;
     }
     & {
-        [K in GetIndices<N>]: number;
+        [K in GetIndices<N>]: T;
     };
 
 export type Vec2<T = unknown> = VecN<T, 2>;

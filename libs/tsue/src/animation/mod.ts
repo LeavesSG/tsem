@@ -16,7 +16,7 @@ interface OnTick {
 const ANIMATION_DEFAULT_CFG: Required<AnimationConfig> = {
     duration: 40_000,
     playbackRate: 1,
-};
+} satisfies AnimationConfig;
 
 enum AnimationState {
     Pause,
@@ -32,12 +32,8 @@ export class Animation {
         };
         this.loop(performance.now());
     }
-    /** animation state: running, pause */
-    playState: AnimationState = AnimationState.Pause;
-    /** animation state: running, pause */
-    progress = 0;
-    runTick = 0;
 
+    /** fallback to setInterval when Raf not available */
     static availableTimer = self.requestAnimationFrame ?? ((cb) => {
         return new Promise(res => {
             setTimeout(() => {
@@ -45,8 +41,16 @@ export class Animation {
             }, 1e3 / 60);
         });
     });
-
+    /** Current animation play state */
+    playState: AnimationState = AnimationState.Pause;
+    /** Current animation play progress */
+    progress = 0;
+    /** Current running tick, got from Performance API */
+    runTick = 0;
+    /** Last tick when loop func called. */
     private lastTick = 0;
+
+    /** Main loop */
     private loop(currentTick: number) {
         switch (this.playState) {
             case AnimationState.Running: {
@@ -111,18 +115,25 @@ export class Animation {
         return this;
     }
 
+    /** Play the animation */
     public play() {
         this.playState = AnimationState.Running;
         return this;
     }
+
+    /** Pause the animation, callbacks won't be called during pause. */
     public pause() {
         this.playState = AnimationState.Pause;
         return this;
     }
-    public setSpeed(spd: number) {
+
+    /** Set the playback rate of animation. */
+    public setPlaybackRate(spd: number) {
         this.cfg.playbackRate = spd;
         return this;
     }
+
+    /** Jump to a certain progress, valid range: [0,1] */
     public jumpTo(progress: number) {
         if (progress < 0 || progress > 1) {
             throw Error("Invalid param `progress` provided, valid value range: 0-1 ");
@@ -130,6 +141,8 @@ export class Animation {
         this.progress = progress;
         return this;
     }
+
+    /** Reset the animation. */
     public reset() {
         this.pause();
         return this.jumpTo(0);

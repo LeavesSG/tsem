@@ -1,5 +1,5 @@
 import { IndexTracing } from "../obj-path/obj-path.ts";
-import { debugPrint } from "../shared/debug/debug-print.ts";
+import { Debug } from "../traits/mod.ts";
 import { FromPattern } from "./transform.ts";
 import { PatternBuf, PatternType } from "./variants.ts";
 import { ArrayPatternKey, isArrayPattern } from "./variants/array.ts";
@@ -297,7 +297,7 @@ export class Pattern<B = unknown, T extends PatternType = PatternType> {
             case PatternType.Constructor:
             case PatternType.MatchFunc: {
                 const buf = this.buf as PatternBuf<PatternType.Constructor>;
-                return debugPrint(buf);
+                return Debug.debug(buf);
             }
 
             case PatternType.Tuple: {
