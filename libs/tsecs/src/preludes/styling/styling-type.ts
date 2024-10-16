@@ -6,7 +6,7 @@ import type {
     DefaultComponentDescriptor,
     DefaultComponentPlainProps,
 } from "../../types/default-comp";
-import type { Scalar } from "../../types/essential.ts";
+import type { Struct } from "../../types/essential.ts";
 
 type CustomComponentDescriptor<T extends string> = {
     name: T;
@@ -22,7 +22,7 @@ export interface StylingBlock {
     descriptors?: ComponentDescriptor<string>[];
     bundleKey?: string;
     plainProps?: DefaultComponentPlainProps;
-    components?: Component<Scalar>[];
+    components?: Component<Struct>[];
 }
 
 export type StylingSheet = StylingBlock[];
@@ -35,7 +35,7 @@ export function defineCompDesc<
     return styler;
 }
 
-export function CompToDesc(component: Component<Scalar>): ComponentDescriptor<string> {
+export function CompToDesc(component: Component<Struct>): ComponentDescriptor<string> {
     const name = getConstructor(component).name;
     const args = [component.buf];
     return {

@@ -1,4 +1,4 @@
-import { Vec3 } from "../../vecn/vecn.ts";
+import { Vec3 } from "../../types/vecn/vecn.ts";
 
 export enum AxisType {
     Length,

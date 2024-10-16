@@ -1,4 +1,4 @@
-import { VecN } from "../../vecn/vecn.ts";
+import { VecN } from "../../types/vecn/vecn.ts";
 
 export class VecCalc<N extends number> {
     N: N;

@@ -8,6 +8,7 @@
 
         "lib": ["dom", "deno.ns", "esnext"]
     },
+    "exclude": ["**/*/legacy/**/*"],
     "tasks": {
         "build": "deno run -A ./build/esbuid.ts"
     }

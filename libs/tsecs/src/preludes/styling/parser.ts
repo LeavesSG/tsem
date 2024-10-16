@@ -4,7 +4,7 @@ import { ComponentBundlePool } from "../res/comp-bundle-pool.ts";
 import { ComponentPool } from "../res/comp-pool.ts";
 
 import type { Component } from "../../core.ts";
-import type { Scalar } from "../../types/essential.ts";
+import type { Struct } from "../../types/essential.ts";
 import type { StylingBlock, StylingSheet } from "./styling-type.ts";
 
 export class StylingParser extends Res {
@@ -35,7 +35,7 @@ export class StylingParser extends Res {
     }
     parseBundle(bundleKey: StylingBlock["bundleKey"] = "") {
         if (bundleKey === "") return [];
-        const parsed = new Set<Component<Scalar>>();
+        const parsed = new Set<Component<Struct>>();
         const keys = bundleKey.split(" ");
         const bundleMgr = this.cmd.getRes(ComponentBundlePool);
         keys.forEach((key) => {
@@ -47,7 +47,7 @@ export class StylingParser extends Res {
 
     parseDescriptors(descriptors: StylingBlock["descriptors"] = []) {
         const pool = this.cmd.getRes(ComponentPool);
-        const parsed: Component<Scalar>[] = [];
+        const parsed: Component<Struct>[] = [];
         descriptors.forEach(({ name, args }) => {
             const found = pool.buf.get(name);
             if (!found) return;

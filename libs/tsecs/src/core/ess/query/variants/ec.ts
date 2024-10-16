@@ -1,12 +1,12 @@
 import { Query, SourceType } from "../base.ts";
 
-import type { Scalar } from "../../../../types/essential.ts";
+import type { Struct } from "../../../../types/essential.ts";
 import type { Component } from "../../../ecs/component.ts";
 import type { Entity } from "../../../ecs/entity.ts";
 
 export class QueryEC<
-    const C extends typeof Component<Scalar> = typeof Component<Scalar>,
-    const W extends typeof Component<Scalar>[] = [],
+    const C extends typeof Component<Struct> = typeof Component<Struct>,
+    const W extends typeof Component<Struct>[] = [],
 > extends Query<
     C,
     SourceType.Component,
@@ -33,7 +33,7 @@ export class QueryEC<
     }
 
     query(
-        source: IterableIterator<[number, Component<Scalar>[]]>,
+        source: IterableIterator<[number, Component<Struct>[]]>,
     ): [Entity, InstanceType<C>][] {
         const res = [];
         for (const [entity, comps] of source) {

@@ -1,4 +1,5 @@
-import type { Scalar } from "../../types/essential.ts";
+// deno-lint-ignore-file no-explicit-any
+import type { Struct } from "../../types/essential.ts";
 
 /**
  * # Component
@@ -24,7 +25,7 @@ import type { Scalar } from "../../types/essential.ts";
  * ```
  */
 
-export abstract class Component<const T extends Scalar = Scalar> {
+export abstract class Component<const T extends Struct = any> {
     buf: T;
     constructor(buf: T) {
         this.buf = buf;

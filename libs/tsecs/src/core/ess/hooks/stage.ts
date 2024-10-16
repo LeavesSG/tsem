@@ -1,22 +1,16 @@
 export enum RenderStage {
-    /**
-     * Normally triggered each render loop.
-     */
+    /** Normally triggered each render loop. */
     Loop = 0x00,
     Pause,
     Resume,
 }
 
 export enum AppStage {
-    /**
-     * The stage before the app start.
-     */
+    /** Before the app start.*/
     Startup = 0x10,
+    /** The moment the app starts. */
     Start,
-    /**
-     * The stage when the app ends. This is the stage where you
-     * planned to release the resources.
-     */
+    /** The stage when the app ends. The stage where resources should be dropped. */
     End,
 }
 

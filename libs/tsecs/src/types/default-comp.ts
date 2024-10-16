@@ -1,19 +1,19 @@
-import type { Component } from "../core.ts";
+import { Component } from "../core/ecs/component.ts";
 import type * as Components from "../preludes/comp.ts";
-import type { Scalar } from "./essential.ts";
+import type { Struct } from "./essential.ts";
 
 export type DefaultComponents = typeof Components;
 export type DefaultCompNames = keyof DefaultComponents;
-export type DefaultCompArgs<N extends DefaultCompNames> = DefaultComponents[N] extends
-    typeof Component<Scalar> ? ConstructorParameters<DefaultComponents[N]> : unknown;
+export type DefaultCompArgs<N extends DefaultCompNames> = DefaultComponents[N] extends typeof Component<Struct>
+    ? ConstructorParameters<DefaultComponents[N]>
+    : unknown;
 
 type UnionToIntersection<T> = (T extends any ? (x: T) => void : never) extends (
     x: infer R,
 ) => void ? R
     : never;
 type DefaultCompBufUnion = {
-    [key in keyof DefaultComponents]: InstanceType<DefaultComponents[key]> extends
-        Component<infer R> ? R : never;
+    [key in keyof DefaultComponents]: InstanceType<DefaultComponents[key]> extends Component<infer R> ? R : never;
 };
 
 type DefaultCompBufIntersection = UnionToIntersection<

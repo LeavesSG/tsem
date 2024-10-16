@@ -1,12 +1,13 @@
-// export * from "./option/mod.ts";
-// export * from "./result/mod.ts";
+/** Mods */
+// export * from "./structs/animation/mod.ts";
+// export * from "./structs/architecture/mod.ts";
+// export * from "./structs/carousal/mod.ts";
+// export * from "./structs/color/mod.ts";
+// export * from "./structs/locker/mod.ts";
+// export * from "./structs/obj-path/mod.ts";
+// export * from "./structs/pattern/mod.ts";
+// export * from "./structs/pipeline/mod.ts";
 
-// export * from "./time/mod.ts";
-// export * from "./animation/mod.ts";
-
-export * from "./carousal/mod.ts";
-// export * from "./locker/mod.ts";
-// export * from "./try-await/mod.ts";
-
-export * from "./color/mod.ts";
-export * from "./pattern/mod.ts";
+// export * from "./traits/mod.ts";
+// export * from "./types/mod.ts";
+// export * from "./utils/mod.ts";

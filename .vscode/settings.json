@@ -1,4 +1,9 @@
 {
     "editor.defaultFormatter": "dprint.dprint",
-    "deno.enablePaths": ["./"]
+    "deno.enablePaths": [
+        "./"
+    ],
+    "[typescript]": {
+        "editor.defaultFormatter": "dprint.dprint"
+    }
 }
