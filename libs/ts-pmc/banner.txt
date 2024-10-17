@@ -1,0 +1,4 @@
+/**
+ * TypeScript Pattern, Matching and Composing.
+ * @author Tianyi Liu <l.lty@outlook.com>
+*/

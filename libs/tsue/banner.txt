@@ -1,4 +1,0 @@
-/**
- * TypeScript Utils Expanded.
- * @author Tianyi Liu <l.lty@outlook.com>
-*/
