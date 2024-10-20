@@ -14,7 +14,7 @@ Deno.test("pattern", () => {
         name: String,
         age: Number,
         dob: Date,
-        fullName: Pattern.array(String),
+        fullName: Pattern.arrOf(String),
         coord: [Number, Number],
     });
 

@@ -1,6 +1,4 @@
 import { builder, EnumStruct } from "../enum-struct/mod.ts";
-import { type ParsePatExpr, TO_PATTERN } from "../pattern/expr.ts";
-import type { Pattern } from "../pattern/pattern.ts";
 import { UnwrapError } from "./unwrap.ts";
 
 interface OptionDef<T = unknown> {
@@ -22,12 +20,8 @@ export class Option<const T = unknown, V extends keyof OptionDef<T> = keyof Opti
         return this.isVariant("None");
     }
 
-    unwrap(): T {
+    unwrap(): T & this["value"] {
         if (!this.isSome()) throw UnwrapError.fromEnum(this, "Some");
         return this.value;
-    }
-
-    override [TO_PATTERN]() {
-        return super[TO_PATTERN]() as Pattern<Option<T & ParsePatExpr<T>, V>>;
     }
 }

@@ -20,7 +20,7 @@ export class Result<T = unknown, E extends Error = Error, V extends keyof Result
         return this.isVariant("Err");
     }
 
-    unwrap(): T {
+    unwrap(): T & this["value"] {
         if (!this.isOk()) throw UnwrapError.fromEnum(this, "Ok");
         return this.value;
     }

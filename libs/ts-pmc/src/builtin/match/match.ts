@@ -2,8 +2,7 @@ import { PHANTOM_MARKER } from "../../types/phantom.ts";
 import { UnionToTuple } from "../../utils/types.ts";
 import { Result } from "../enums/result.ts";
 import { ParsePatExpr, PatExpressions, PossiblePatExpr } from "../pattern/expr.ts";
-import { Pattern } from "../pattern/pattern.ts";
-import { _, UnknownMaker } from "../pattern/unknown.ts";
+import { _, Pattern } from "../pattern/pattern.ts";
 
 export type OnMatched<R, E> = (expr: E) => R;
 
@@ -17,7 +16,10 @@ export class MatchCasesNotExhaustiveError extends Error {}
 class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
     private source: S;
     private cases: C;
-    declare [PHANTOM_MARKER]: Uncovered<S, C>;
+    declare [PHANTOM_MARKER]: {
+        uncover: Uncovered<S, C>;
+        covered: MatchCovered<C>;
+    };
 
     constructor(source: S, ...cases: C) {
         this.source = source;
@@ -26,12 +28,20 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
 
     case<R, const T extends PossiblePatExpr<UnionToTuple<Uncovered<S, C>>[number]>>(
         pat: T,
-        ifMatched: NoInfer<OnMatched<R, S & ParsePatExpr<T>>>,
+        ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
+    ): CreateMatchObj<S, C, R, T>;
+    case<R, const T extends PatExpressions = typeof _>(
+        pat: T,
+        ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
+    ): CreateMatchObj<S, C, R, T>;
+    case<R, const T extends PatExpressions = typeof _>(
+        pat: T,
+        ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
     ): CreateMatchObj<S, C, R, T> {
         return new MatchExhausted(this.source, ...this.cases, { pat, onMatched: ifMatched });
     }
 
-    default<R = unknown>(ifMatched: OnMatched<R, S & UnknownMaker>) {
+    default<R = unknown>(ifMatched: OnMatched<R, S & typeof _>) {
         return new MatchExhausted(this.source, ...this.cases, { pat: _, onMatched: ifMatched });
     }
 
@@ -60,10 +70,10 @@ class MatchExhausted<S = unknown, C extends Case<any, any, any>[] = []> extends 
 }
 
 type MatchRet<C extends Case<any, any, any>[], __R = never> = C extends
-    [Case<infer R, any>, ...infer Rest extends Case<any, any, any>[]] ? MatchRet<Rest, __R | R> : __R;
+    [Case<any, infer R, any>, ...infer Rest extends Case<any, any, any>[]] ? MatchRet<Rest, __R | R> : __R;
 
 type MatchCovered<C extends Case<any, any, any>[], __R = never> = C extends
-    [Case<any, infer R>, ...infer Rest extends Case<any, any, any>[]] ? MatchCovered<Rest, __R | ParsePatExpr<R>>
+    [Case<any, any, infer R>, ...infer Rest extends Case<any, any, any>[]] ? MatchCovered<Rest, __R | ParsePatExpr<R>>
     : __R;
 
 type IfExhaustive<S, C extends Case<any, any, any>[]> = S extends MatchCovered<C> ? true : false;

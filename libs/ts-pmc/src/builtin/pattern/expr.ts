@@ -3,47 +3,39 @@ import { ConstructorType, PrimitiveTypeDict, PrimitiveTypeName } from "../../typ
 import { TypeOf } from "../../types/typeof.ts";
 import { Pattern } from "./pattern.ts";
 import type { ToPattern } from "./to-pattern.ts";
-import { UnknownMaker } from "./unknown.ts";
 
 export enum PatExpr {
+    /** Expr is a object that implements `ToPattern` interface. */
+    ToPattern,
     /** Expr that matches a primitive value, with expr as its type string. */
-    Primitive,
-    /** Expr that is a PatternObject, match value that pass its `match` methods. */
-    PatObj,
+    Typeof,
+    /** Expr that matches a constructor instance, with expr as its constructor type. */
+    InstanceOf,
     /** Expr that matches a tuple type, with each corresponding member also matched. */
     Tuple,
-    /** Expr that matches any value. */
-    Unknown,
-    /** Expr that matches a constructor instance, with expr as its constructor type. */
-    Constructor,
     /** Expr that matches a struct type, with value in each corresponding KV pairs also matched. */
     Struct,
-    ToPattern,
     /** Expr that match value strictly equals itself. */
     Literal,
 }
 
 export interface PatExprForm {
-    [PatExpr.Primitive]: PrimitiveTypeName;
+    [PatExpr.Typeof]: PrimitiveTypeName;
     [PatExpr.Tuple]: unknown[];
-    [PatExpr.Constructor]: ConstructorType;
-    [PatExpr.Unknown]: UnknownMaker;
+    [PatExpr.InstanceOf]: ConstructorType;
     [PatExpr.Struct]: Record<string, unknown>;
 
     [PatExpr.Literal]: unknown;
 
-    [PatExpr.PatObj]: Pattern;
     [PatExpr.ToPattern]: ToPattern<any>;
 }
 
 export interface PatExprParser<T> {
-    [PatExpr.Primitive]: T extends PrimitiveTypeName ? PrimitiveTypeDict[T] : never;
+    [PatExpr.Typeof]: T extends PrimitiveTypeName ? PrimitiveTypeDict[T] : never;
     [PatExpr.Tuple]: T extends unknown[] ? ParseTuplePatExpr<T> : never;
     [PatExpr.Struct]: T extends Record<string, unknown> ? ParseStructPatExpr<T> : never;
 
-    [PatExpr.Constructor]: T extends ConstructorType<infer R> ? R : never;
-    [PatExpr.PatObj]: T extends Pattern<infer R> ? R : never;
-    [PatExpr.Unknown]: T extends UnknownMaker ? unknown : never;
+    [PatExpr.InstanceOf]: T extends ConstructorType<infer R> ? R : never;
     [PatExpr.Literal]: T;
     [PatExpr.ToPattern]: T extends ToPattern<infer R> ? R : never;
 }
@@ -51,13 +43,12 @@ export interface PatExprParser<T> {
 export type PatExpressions = PatExprForm[PatExpr];
 
 export type PatExprParseSeries = [
-    PatExpr.PatObj,
     PatExpr.ToPattern,
-    PatExpr.Unknown,
-    PatExpr.Primitive,
-    PatExpr.Constructor,
+    PatExpr.Typeof,
+    PatExpr.InstanceOf,
     PatExpr.Tuple,
     PatExpr.Struct,
+    PatExpr.Literal,
 ];
 
 export type MatchPatExprVariant<
@@ -67,7 +58,7 @@ export type MatchPatExprVariant<
     infer S extends PatExpr,
     ...infer Rest extends PatExpr[],
 ] ? T extends PatExprForm[S] ? S : MatchPatExprVariant<T, Rest>
-    : PatExpr.Literal;
+    : never;
 
 export type ParsePatExpr<T> = PatExprParser<T>[MatchPatExprVariant<T>];
 
@@ -79,24 +70,17 @@ export type ParseStructPatExpr<T> = {
     [K in keyof T]: ParsePatExpr<T[K]>;
 };
 
-export interface CommonPatExprDict<T = unknown> {
-    [PatExpr.Primitive]: TypeOf<T> | WrappedConsOf<T>;
+export interface PossiblePatExprDict<T = unknown> {
+    [PatExpr.Typeof]: TypeOf<T> | WrappedConsOf<T>;
     [PatExpr.Tuple]: PossibleTupleExpr<T>;
     [PatExpr.Struct]: PossibleStructExpr<T>;
     [PatExpr.Literal]: T;
-}
-
-export interface PossiblePatExprDict<T = unknown> extends CommonPatExprDict<T> {
-    [PatExpr.Constructor]: Extract<T, object> extends infer R extends object ? ConstructorType<R> : never | ConsOf<T>;
-    [PatExpr.Unknown]: UnknownMaker;
-    [PatExpr.PatObj]: Pattern<T>;
+    [PatExpr.InstanceOf]: Extract<T, object> extends infer R extends object ? ConstructorType<R> : never | ConsOf<T>;
     [PatExpr.ToPattern]: ToPattern<T>;
     Array: T extends any[] ? Pattern<T[number][]> : never;
 }
 
 export type PossiblePatExpr<T> = PossiblePatExprDict<T>[keyof PossiblePatExprDict];
-export type CommonPatExpr<T> = CommonPatExprDict<T>[keyof CommonPatExprDict];
-export type LiteralPatExpr<T> = CommonPatExprDict<T>[PatExpr.Literal];
 type PossibleTupleExpr<T, __R = never> = T extends [...infer R, any[]] ? PossiblePatExpr<R> : __R;
 type PossibleStructExpr<T> = T extends Record<string, unknown> ? {
         [K in keyof T]: PossiblePatExpr<T[K]>;

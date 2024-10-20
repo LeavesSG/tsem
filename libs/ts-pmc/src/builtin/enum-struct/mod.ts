@@ -1,6 +1,6 @@
-import { PHANTOM_MARKER } from "../../types/phantom.ts";
+import { PHANTOM_MARKER, type PhantomMarker } from "../../types/phantom.ts";
 import { Pattern } from "../pattern/pattern.ts";
-import { TO_PATTERN } from "../pattern/to-pattern.ts";
+import { SYMBOL_TO_PATTERN } from "../pattern/to-pattern.ts";
 
 export class EnumStruct<
     Def = Record<string, unknown>,
@@ -19,12 +19,11 @@ export class EnumStruct<
         return this.variant as unknown as V2 === variant;
     }
 
-    [TO_PATTERN]() {
+    [SYMBOL_TO_PATTERN]() {
         const pred = (target: unknown): target is EnumStruct<Def, Var> => {
             const ctor = this.constructor as typeof EnumStruct;
             if (!(target instanceof ctor)) return false;
-            const pattern = Pattern.from(this.value);
-            return target.isVariant(this.variant) && pattern.match(target.value);
+            return target.isVariant(this.variant);
         };
         return new Pattern(pred);
     }
@@ -50,4 +49,4 @@ export function genericBuilder<const Es extends typeof EnumStruct<any, any>, con
     };
 }
 
-type GetVs<C extends typeof EnumStruct<any, any>> = InstanceType<C>[typeof PHANTOM_MARKER];
+type GetVs<C extends typeof EnumStruct<any, any>> = InstanceType<C>[PhantomMarker];
