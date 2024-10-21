@@ -99,7 +99,7 @@ export class MixtureCtx {
 }
 
 export interface Mixture<T = unknown, Ctx extends WeakKey = typeof self> {
-    new(...args: never[]): T;
+    new(...args: never[]): T & Mixture<T>;
 }
 
 export class Mixture<T = unknown, Ctx extends WeakKey = typeof self> {

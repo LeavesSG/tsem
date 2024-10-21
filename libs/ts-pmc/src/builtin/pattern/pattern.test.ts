@@ -1,6 +1,6 @@
 import { assert } from "https://deno.land/std@0.201.0/assert/assert.ts";
 import { assertEquals } from "https://deno.land/std@0.201.0/assert/assert_equals.ts";
-import { Pattern } from "./pattern.ts";
+import { number, Pattern, string } from "./pattern.ts";
 
 Deno.test("pattern", () => {
     interface Student {
@@ -11,11 +11,11 @@ Deno.test("pattern", () => {
         coord: [number, number];
     }
     const studentPattern = Pattern.from({
-        name: String,
-        age: Number,
+        name: string,
+        age: number,
         dob: Date,
-        fullName: Pattern.arrOf(String),
-        coord: [Number, Number],
+        fullName: Pattern.arrOf(string),
+        coord: [number, number],
     });
 
     const studentA: Student = {
@@ -25,7 +25,7 @@ Deno.test("pattern", () => {
         name: "Newton",
         coord: [0, 1],
     };
-    console.log(studentPattern.match(studentA));
+
     assert(studentPattern.match(studentA));
     const notAStudent = {
         ...studentA,

@@ -30,3 +30,7 @@ export type CoverMerge<T, U> =
         [K in Exclude<keyof T, keyof U>]: T[K];
     }
     & U;
+
+export type TupleIntersection<T extends any[], __R = unknown> = T extends [infer R, ...infer Rest extends any[]]
+    ? TupleIntersection<Rest, R & __R>
+    : __R;

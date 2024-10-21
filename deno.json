@@ -5,6 +5,7 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noUnusedLocals": true,
+        "noImplicitThis": true,
 
         "lib": ["dom", "deno.ns", "esnext"]
     },

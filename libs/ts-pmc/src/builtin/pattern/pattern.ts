@@ -1,12 +1,13 @@
 import { isWeakKey } from "../../types/map.ts";
-import { type ConstructorType, isConstructorType, isPrimitiveTypeName } from "../../types/mod.ts";
+import { type ConstructorType, isConstructorType } from "../../types/mod.ts";
 import type { PhantomMarker } from "../../types/phantom.ts";
-import { PRIMITIVE_TYPE_DICT } from "../../types/primitive.ts";
+import { isTypeOf, isTypeOfNames } from "../../types/typeof.ts";
+import type { TupleIntersection } from "../../utils/types.ts";
 import { EnumStruct } from "../enum-struct/mod.ts";
 import type { PossiblePatExpr } from "./expr.ts";
 import { ParsePatExpr, PatExpr, PatExpressions, PatExprForm, PatExprParser } from "./expr.ts";
 import type { ToPattern } from "./to-pattern.ts";
-import { implToPattern, SYMBOL_TO_PATTERN } from "./to-pattern.ts";
+import { hasImplToPattern, implToPattern, SYMBOL_TO_PATTERN } from "./to-pattern.ts";
 
 type PatternPredicate<T> = (target: unknown) => target is T;
 
@@ -21,25 +22,43 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         return this.predicate(target);
     }
 
+    notMatch<U>(target: U): target is Exclude<U, T> {
+        return !this.predicate(target);
+    }
+
     [SYMBOL_TO_PATTERN](): Pattern<T> {
         return this;
     }
 
-    static typeof<T extends PatExprForm[PatExpr.Typeof]>(expr: T) {
-        const pred = (target: unknown): target is PatExprParser<T>[PatExpr.Typeof] => {
-            const typeName = typeof target;
-            return typeName === expr;
-        };
-        return new this(pred);
+    static unknown = new this((_target: unknown): _target is unknown => true);
+    static _ = this.unknown;
+    static any = new this((_target: unknown): _target is any => true);
+    static never = new this((_target: unknown): _target is never => false);
+
+    static string = new this(isTypeOf("string"));
+    static number = new this(isTypeOf("number"));
+    static boolean = new this(isTypeOf("boolean"));
+    static symbol = new this(isTypeOf("symbol"));
+    static bigint = new this(isTypeOf("bigint"));
+    static object = new this(isTypeOf("object"));
+    static function = new this(isTypeOf("function"));
+    static undefined = this.literal(undefined);
+    static null = this.literal(null);
+    static NaN = new this((target: unknown): target is number => Number.isNaN(target));
+
+    static array = this.arrOf(this._);
+
+    static typeOf<const T extends PatExprForm[PatExpr.Typeof]>(expr: T) {
+        return this[expr];
     }
 
-    static tuple<T extends PatExprForm[PatExpr.Tuple]>(expr: T) {
+    static tuple<const T extends PatExprForm[PatExpr.Tuple]>(expr: T) {
         const pred = (target: unknown): target is PatExprParser<T>[PatExpr.Tuple] =>
             Array.isArray(target) && expr.every((child, index) => Pattern.from(child).match(target[index]));
         return new this(pred);
     }
 
-    static struct<T extends PatExprForm[PatExpr.Struct]>(expr: T) {
+    static struct<const T extends PatExprForm[PatExpr.Struct]>(expr: T) {
         const pred = (target: unknown): target is PatExprParser<T>[PatExpr.Struct] => {
             if (!target || typeof target !== "object") return false;
             return Object.entries(expr).every(([key, value]) => {
@@ -51,22 +70,14 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         return new this(pred);
     }
 
-    static instOf<T extends PatExprForm[PatExpr.InstanceOf]>(expr: T) {
-        for (const [key, value] of Object.entries(PRIMITIVE_TYPE_DICT)) {
-            if (value as unknown !== expr) continue;
-            const pred = (target: unknown): target is PatExprParser<T>[PatExpr.InstanceOf] => {
-                const targetType = typeof target;
-                return target instanceof expr || targetType === key;
-            };
-            return new this(pred);
-        }
+    static instOf<const T extends PatExprForm[PatExpr.InstanceOf]>(expr: T) {
         const pred = (target: unknown): target is PatExprParser<T>[PatExpr.InstanceOf] => {
             return target instanceof expr;
         };
         return new this(pred);
     }
 
-    static ctorOf<T>(expr: T) {
+    static ctorOf<const T>(expr: T) {
         const pred = (target: unknown): target is ConstructorType<T> => {
             return isConstructorType(target) && expr instanceof target;
         };
@@ -74,12 +85,11 @@ export class Pattern<T = unknown> implements ToPattern<T> {
     }
 
     static literal<const T>(expr: T) {
-        const pred = (target: unknown): target is T => {
-            return target === expr;
-        };
-        return new this(pred);
+        if (Number.isNaN(expr)) return this.NaN;
+        return new this((target: unknown): target is T => target === expr);
     }
-    static union<T extends PatExpressions[]>(expr: T) {
+
+    static union<const T extends PatExpressions[]>(expr: T) {
         const pred = (target: unknown): target is ParsePatExpr<T[number]> => {
             return expr.some(expr => {
                 const pattern = this.from(expr);
@@ -88,8 +98,17 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         };
         return new this(pred);
     }
+    static intersect<const T extends PatExpressions[]>(expr: T) {
+        const pred = (target: unknown): target is ParsePatExpr<TupleIntersection<T>> => {
+            return expr.every(expr => {
+                const pattern = this.from(expr);
+                return pattern.match(target);
+            });
+        };
+        return new this(pred);
+    }
 
-    static arrOf<T>(expr: T): Pattern<ParsePatExpr<T>[]> {
+    static arrOf<const T>(expr: T): Pattern<ParsePatExpr<T>[]> {
         const pred = (target: unknown): target is ParsePatExpr<T>[] => {
             if (!(Array.isArray(target))) return false;
             const pattern = this.from(expr);
@@ -99,7 +118,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         };
         return new this(pred);
     }
-    static enum<
+    static enumOf<
         const T extends typeof EnumStruct<any, any>,
         Var extends keyof InstanceType<T>[PhantomMarker] = keyof InstanceType<T>[PhantomMarker],
         Val extends InstanceType<T>[PhantomMarker][Var] = InstanceType<T>[PhantomMarker][Var],
@@ -122,33 +141,59 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         if (cache) return cache;
     }
 
-    static from<const T extends PatExprForm[PatExpr.ToPattern]>(expr: T): Pattern<PatExprParser<T>[PatExpr.ToPattern]>;
+    static from<T extends PatExprForm[PatExpr.ToPattern]>(expr: T): Pattern<PatExprParser<T>[PatExpr.ToPattern]>;
     static from<const T extends PatExprForm[PatExpr.Typeof]>(expr: T): Pattern<PatExprParser<T>[PatExpr.Typeof]>;
-    static from<const T extends PatExprForm[PatExpr.InstanceOf]>(
+    static from<T extends PatExprForm[PatExpr.InstanceOf]>(
         expr: T,
     ): Pattern<PatExprParser<T>[PatExpr.InstanceOf]>;
-    static from<const T extends PatExprForm[PatExpr.Tuple]>(expr: T): Pattern<PatExprParser<T>[PatExpr.Tuple]>;
-    static from<const T extends PatExprForm[PatExpr.Struct]>(expr: T): Pattern<PatExprParser<T>[PatExpr.Struct]>;
+    static from<T extends PatExprForm[PatExpr.Tuple]>(expr: [...T]): Pattern<PatExprParser<T>[PatExpr.Tuple]>;
+    static from<T extends PatExprForm[PatExpr.Struct]>(expr: T): Pattern<PatExprParser<T>[PatExpr.Struct]>;
     static from<const T extends PatExprForm[PatExpr.Literal]>(expr: T): Pattern<PatExprParser<T>[PatExpr.Literal]>;
-    static from<const T>(expr: T) {
+    static from<T>(expr: T) {
         return (isWeakKey(expr) && this.checkCache(expr))
-            || (implToPattern(expr) && expr[SYMBOL_TO_PATTERN]())
-            || (isPrimitiveTypeName(expr) && this.typeof(expr))
-            || (Array.isArray(expr) && this.tuple(expr))
-            || (isConstructorType(expr) && this.instOf(expr))
-            || (typeof expr === "object" && this.struct(expr as Record<string, unknown>))
+            || (hasImplToPattern(expr) && expr[SYMBOL_TO_PATTERN]())
             || this.literal(expr);
     }
-
-    static unknown = new this((_target: unknown): _target is unknown => {
-        return true;
-    });
-    static _ = this.unknown;
-    static string = this.typeof("string");
-    static number = this.typeof("number");
-    static array = this.arrOf(this._);
 }
 
 export const Pat = Pattern;
-export const pattern = Pat.from.bind(Pat);
-export const { _, string, number, array } = Pat;
+export const { any, never, _, string, number, array, bigint, boolean, function: func } = Pattern;
+
+export const { arrOf, ctorOf, instOf, enumOf, literal, union, intersect, tuple, struct, typeOf, from: pattern } =
+    new Proxy(Pat, {
+        get(target, prop, rec) {
+            const res = Reflect.get(target, prop, rec);
+            return func.match(res) && Pattern.instOf(Pattern).notMatch(res) && res.bind(Pattern) || res;
+        },
+    });
+
+implToPattern(String, {
+    toPattern(): Pattern<unknown> {
+        if (isTypeOfNames(this)) {
+            return Pat[this];
+        }
+        return Pat.literal(this);
+    },
+});
+
+implToPattern(Array, {
+    toPattern(): Pattern<unknown[]> {
+        return Pat.tuple(this);
+    },
+});
+
+implToPattern(Function, {
+    toPattern(): Pattern<unknown> {
+        if (isConstructorType(this)) {
+            return Pattern.instOf(this);
+        } else {
+            return Pattern.literal(this);
+        }
+    },
+});
+
+implToPattern(Object, {
+    toPattern(): Pattern<unknown> {
+        return Pattern.struct(this as Record<string, unknown>);
+    },
+});

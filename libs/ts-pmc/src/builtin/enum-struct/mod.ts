@@ -19,7 +19,7 @@ export class EnumStruct<
         return this.variant as unknown as V2 === variant;
     }
 
-    [SYMBOL_TO_PATTERN]() {
+    [SYMBOL_TO_PATTERN](): Pattern<EnumStruct<Def, Var>> {
         const pred = (target: unknown): target is EnumStruct<Def, Var> => {
             const ctor = this.constructor as typeof EnumStruct;
             if (!(target instanceof ctor)) return false;

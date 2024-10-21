@@ -1,6 +1,7 @@
 import { ConsOf, WrappedConsOf } from "../../types/builtin.ts";
-import { ConstructorType, PrimitiveTypeDict, PrimitiveTypeName } from "../../types/mod.ts";
-import { TypeOf } from "../../types/typeof.ts";
+import { ConstructorType } from "../../types/mod.ts";
+import type { TypeOfDict } from "../../types/typeof.ts";
+import { TypeOf, type TypeOfName } from "../../types/typeof.ts";
 import { Pattern } from "./pattern.ts";
 import type { ToPattern } from "./to-pattern.ts";
 
@@ -20,7 +21,7 @@ export enum PatExpr {
 }
 
 export interface PatExprForm {
-    [PatExpr.Typeof]: PrimitiveTypeName;
+    [PatExpr.Typeof]: TypeOfName;
     [PatExpr.Tuple]: unknown[];
     [PatExpr.InstanceOf]: ConstructorType;
     [PatExpr.Struct]: Record<string, unknown>;
@@ -31,7 +32,7 @@ export interface PatExprForm {
 }
 
 export interface PatExprParser<T> {
-    [PatExpr.Typeof]: T extends PrimitiveTypeName ? PrimitiveTypeDict[T] : never;
+    [PatExpr.Typeof]: T extends TypeOfName ? TypeOfDict[T] : never;
     [PatExpr.Tuple]: T extends unknown[] ? ParseTuplePatExpr<T> : never;
     [PatExpr.Struct]: T extends Record<string, unknown> ? ParseStructPatExpr<T> : never;
 

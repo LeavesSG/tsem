@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.201.0/assert/assert_equals.ts";
 import { builder, EnumStruct } from "../enum-struct/mod.ts";
+import { Option } from "../enums/option.ts";
 import { Pat } from "../pattern/pattern.ts";
 import { match } from "./match.ts";
 
@@ -13,7 +14,14 @@ Deno.test("match", () => {
         static Num = builder(this, "Num");
     }
     const source = Val.Str("123") as Val;
-    const res = match(source).case(Pat.enum(Val, "Num"), e => String(e.value)).case(Pat.enum(Val, "Str"), e => e.value)
-        .exec();
+    const p1 = Pat.enumOf(Val, "Num");
+    const p2 = Pat.enumOf(Val, "Str");
+    const mt = match(source);
+    const res = mt.case(p1, e => String(e.value)).case(p2, e => e.value).exec();
     assertEquals(res, "123");
+
+    const some1 = Option.Some(1) as Option<number>;
+    const p = match(some1).case(Pat.enumOf(Option, "Some"), e => e.value).case(Pat.enumOf(Option, "None"), _ => 0)
+        .exec();
+    assertEquals(p, 1);
 });

@@ -1,5 +1,6 @@
 import { PHANTOM_MARKER } from "../../types/phantom.ts";
 import { UnionToTuple } from "../../utils/types.ts";
+import type { EnumStruct } from "../enum-struct/mod.ts";
 import { Result } from "../enums/result.ts";
 import { ParsePatExpr, PatExpressions, PossiblePatExpr } from "../pattern/expr.ts";
 import { _, Pattern } from "../pattern/pattern.ts";
@@ -19,6 +20,7 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
     declare [PHANTOM_MARKER]: {
         uncover: Uncovered<S, C>;
         covered: MatchCovered<C>;
+        exhaustive: IfExhaustive<S, C>;
     };
 
     constructor(source: S, ...cases: C) {
@@ -58,6 +60,8 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
 }
 
 export class Match<S> extends MatchOngoing<S, []> {
+    static match<S extends EnumStruct<any, any>>(source: S): Match<MatchSplitEnum<S>>;
+    static match<S>(source: S): Match<S>;
     static match<S>(source: S) {
         return new this(source);
     }
@@ -80,8 +84,12 @@ type IfExhaustive<S, C extends Case<any, any, any>[]> = S extends MatchCovered<C
 
 type Uncovered<S, C extends Case<any, any, any>[]> = Exclude<S, MatchCovered<C>>;
 
-type CreateMatchObj<S, C extends Case<any, any, any>[], R, T> = IfExhaustive<S, [...C, Case<R, T>]> extends true
+type CreateMatchObj<S, C extends Case<any, any, any>[], R, T> = IfExhaustive<S, [...C, Case<S, R, T>]> extends true
     ? MatchExhausted<S, [...C, Case<S, R, T>]>
     : MatchOngoing<S, [...C, Case<S, R, T>]>;
 
 export const match = Match.match.bind(Match);
+
+export type MatchSplitEnum<T extends EnumStruct<any, any>> = T extends EnumStruct<infer Def, infer Var>
+    ? Var extends keyof Def ? T & EnumStruct<Def, Var> : T
+    : T;

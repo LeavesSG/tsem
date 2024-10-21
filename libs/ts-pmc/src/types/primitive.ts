@@ -1,4 +1,4 @@
-export interface PrimitiveTypeDict {
+export interface PrimitiveDict {
     boolean: boolean;
     string: string;
     number: number;
@@ -6,23 +6,29 @@ export interface PrimitiveTypeDict {
     undefined: undefined;
     symbol: symbol;
 }
-export type PrimitiveTypeName = keyof PrimitiveTypeDict;
-export type Primitive = PrimitiveTypeDict[PrimitiveTypeName];
+export type PrimitiveName = keyof PrimitiveDict;
+export type PrimitiveType = PrimitiveDict[PrimitiveName];
 
-export const PRIMITIVE_TYPE_DICT = {
+export const PRIMITIVE_CTOR_DICT = {
     boolean: Boolean,
     string: String,
     number: Number,
     bigint: BigInt,
-    undefined: undefined,
     symbol: Symbol,
+    undefined: undefined,
 };
-export const PRIMITIVE_TYPE_NAME = Object.keys(PRIMITIVE_TYPE_DICT);
+export const PRIMITIVE_NAMES = Object.keys(PRIMITIVE_CTOR_DICT);
 
-export const isPrimitiveTypeName = (target: unknown): target is keyof PrimitiveTypeDict => {
-    return typeof target === "string" && target in PRIMITIVE_TYPE_DICT;
+export const isPrimitiveName = (target: unknown): target is PrimitiveName => {
+    return typeof target === "string" && target in PRIMITIVE_CTOR_DICT;
 };
 
-export const isPrimitiveType = (target: unknown): target is Primitive => {
-    return PRIMITIVE_TYPE_NAME.includes(typeof target);
+export const isPrimitive = (target: unknown): target is PrimitiveType => {
+    return PRIMITIVE_NAMES.includes(typeof target);
+};
+
+export const isPrimitiveType = <T extends PrimitiveName>(typeName: T) => {
+    return (target: unknown): target is PrimitiveDict[T] => {
+        return typeName === (typeof target);
+    };
 };
