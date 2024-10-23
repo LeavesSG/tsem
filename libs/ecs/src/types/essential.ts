@@ -1,4 +1,4 @@
-import { Primitive } from "../../../ts-pmc/src/lib.ts";
+import { Primitive } from "../../../core/src/lib.ts";
 
 export type Index = string | number;
 export type Struct = {

@@ -1,4 +1,3 @@
-import { assert } from "https://deno.land/std@0.201.0/assert/assert.ts";
 import { assertEquals } from "https://deno.land/std@0.201.0/assert/assert_equals.ts";
 import { number, Pattern, string } from "./pattern.ts";
 
@@ -26,10 +25,12 @@ Deno.test("pattern", () => {
         coord: [0, 1],
     };
 
-    assert(studentPattern.match(studentA));
+    studentPattern.assert(studentA);
     const notAStudent = {
         ...studentA,
         age: "0",
     };
-    assertEquals(studentPattern.match(notAStudent), false);
+    const res = studentPattern.exec(notAStudent);
+    console.log(res.value);
+    assertEquals(res.isOk(), false);
 });

@@ -12,16 +12,22 @@ export class Option<const T = unknown, V extends keyof OptionDef<T> = keyof Opti
     static Some = builder(this, "Some") as <const T>(item: T) => Option<T, "Some">;
     static None = builder(this, "None") as <const T>() => Option<T, "None">;
 
-    isSome(): this is Option<T, "Some"> {
+    isSome(): this is this & Option<T, "Some"> {
         return this.isVariant("Some");
     }
 
-    isNone(): this is Option<T, "None"> {
+    isNone(): this is this & Option<T, "None"> {
         return this.isVariant("None");
     }
 
     unwrap(): T & this["value"] {
         if (!this.isSome()) throw UnwrapError.fromEnum(this, "Some");
         return this.value;
+    }
+
+    replace(value: T): this is Option<T, "Some"> {
+        this.value = value as never;
+        this.variant = "Some" as never;
+        return true;
     }
 }

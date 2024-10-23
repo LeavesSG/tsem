@@ -12,11 +12,11 @@ export class Result<T = unknown, E extends Error = Error, V extends keyof Result
     static Ok = builder(this, "Ok") as <const T, E extends Error>(value: T) => Result<T, E, "Ok">;
     static Err = builder(this, "Err") as <const T, E extends Error>(err: E) => Result<T, E, "Err">;
 
-    isOk(): this is Result<T, E, "Ok"> {
+    isOk(): this is this & Result<T, E, "Ok"> {
         return this.isVariant("Ok");
     }
 
-    isErr(): this is Result<T, E, "Err"> {
+    isErr(): this is this & Result<T, E, "Err"> {
         return this.isVariant("Err");
     }
 
