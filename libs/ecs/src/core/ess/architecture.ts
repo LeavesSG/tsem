@@ -7,7 +7,7 @@ import {
     ArchMixin,
     CONS_BUF,
     ConstructorType,
-} from "../../../../core/src/lib.ts";
+} from "../../../../ts-mofi/src/lib.ts";
 import { Component } from "../ecs/component.ts";
 
 export class ECSArchMixin extends ArchMixin {

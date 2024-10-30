@@ -1,7 +1,7 @@
 {
-    "name": "@natsuha_sg/tsem",
+    "name": "@natsuha_sg/ts-mofi",
     "version": "0.0.1",
-    "description": "A TypeScript Extended Monorepo.",
+    "description": "TypeScript with various MOdern Features Implemented.",
     "main": "dist/lib.js",
     "scripts": {},
     "keywords": ["TypeScript", "Utils"],

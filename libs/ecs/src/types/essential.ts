@@ -1,5 +1,3 @@
-import { Primitive } from "../../../core/src/lib.ts";
-
 export type Index = string | number;
 export type Struct = {
     [index: Index]: Primitive | Primitive[] | Struct;
