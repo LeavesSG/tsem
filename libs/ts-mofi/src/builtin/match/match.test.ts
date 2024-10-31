@@ -26,6 +26,6 @@ Deno.test("match", () => {
         .case(Pat.enumOf(Option<number>, "None"), _ => 0).exec();
     assertEquals(p, 1);
     const p3 = match(some1)
-        .case(Pat.enumOf(Option<number>, "None"), _ => 0).forExhaustive().exec();
+        .case(Pat.enumOf(Option<number>, "None"), _ => 0).forceExhaustive().exec();
     assertEquals(p3, 0);
 });

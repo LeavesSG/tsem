@@ -58,7 +58,7 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
         );
     }
 
-    forExhaustive() {
+    forceExhaustive() {
         return this as unknown as MatchExhausted<S, C>;
     }
 }

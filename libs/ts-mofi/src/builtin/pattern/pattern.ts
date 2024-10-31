@@ -73,6 +73,10 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         return this.exec(target).isOk();
     }
 
+    validator() {
+        return this.match.bind(this);
+    }
+
     notMatch<U>(target: U): target is Exclude<U, T> {
         return this.exec(target).isErr();
     }
