@@ -1,3 +1,3 @@
-export interface Debug {
-    debug(): string;
+export abstract class Debug {
+    abstract debug(): string;
 }

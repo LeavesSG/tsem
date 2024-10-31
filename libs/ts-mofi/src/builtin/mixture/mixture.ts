@@ -143,4 +143,9 @@ export class Mixture<T = unknown, Ctx extends WeakKey = typeof self> {
     ) {
         return new this<InstanceIntersection<T>, Ctx>(ctors, ctx);
     }
+
+    mix<U extends ConstructorType[]>(...others: U): Mixture<T & InstanceIntersection<U>, Ctx> {
+        const cons = (this as object).constructor as typeof Mixture;
+        return new cons([...this.constructors, ...others], this.context);
+    }
 }

@@ -1,9 +1,9 @@
 import { Ordering, PartialOrdering } from "../enums/ordering.ts";
 
-export interface PartialCmp<Rhs = typeof this> {
-    partialCmp(this: this, rhs: Rhs): PartialOrdering;
+export abstract class PartialCmp<Rhs = typeof this> {
+    abstract partialCmp(this: this, rhs: Rhs): PartialOrdering;
 }
 
-export interface Cmp<Rhs = typeof this> extends PartialCmp<typeof this> {
-    cmp(this: this, rhs: Rhs): Ordering;
+export abstract class Cmp<Rhs = typeof this> extends PartialCmp<Rhs> {
+    abstract cmp(this: this, rhs: Rhs): Ordering;
 }

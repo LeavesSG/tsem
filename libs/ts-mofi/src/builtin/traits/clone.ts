@@ -1,3 +1,3 @@
-export interface Clone {
-    clone(): this;
+export abstract class Clone {
+    abstract clone(): this;
 }
