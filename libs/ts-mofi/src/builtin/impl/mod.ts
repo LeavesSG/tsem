@@ -37,13 +37,13 @@ export class ImplCtx {
         return proxy;
     }
 
-    impl<T extends ConstructorType, U>(target: T, implObj: U & ThisType<T>) {
+    impl<T, U>(target: ConstructorType<T>, implObj: U & ThisType<T>) {
         const prototype = target.prototype;
         const impl = this.getOrInitImpl(prototype);
         Object.assign(impl, implObj);
     }
 
-    getImpl(obj: object) {
+    implOf<T extends object>(obj: T): ImplOf<T> {
         const getOrInitImplProxy = this.getOrInitImplProxy.bind(this);
         const getOrInitImpl = this.getOrInitImpl.bind(this);
         this.updateImplProtoChain(obj);
@@ -53,7 +53,7 @@ export class ImplCtx {
                 const implProxy = getOrInitImplProxy(getOrInitImpl(Object.getPrototypeOf(target)));
                 return Reflect.get(implProxy, p, receiver);
             },
-        });
+        }) as ImplOf<T>;
     }
 
     isImlProxy(obj: object) {
@@ -75,3 +75,11 @@ export class ImplCtx {
         }
     }
 }
+
+export const IMPL_MARKER = Symbol("impl marker");
+
+export type MarkImpl<Traits> = {
+    [IMPL_MARKER]: Traits;
+};
+
+export type ImplOf<T> = T extends MarkImpl<infer R> ? T & R : T;
