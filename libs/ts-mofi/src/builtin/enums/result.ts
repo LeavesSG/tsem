@@ -1,4 +1,4 @@
-import { builder, EnumStruct } from "../enum-struct/mod.ts";
+import { Builders, EnumOfADT } from "../enum-struct/mod.ts";
 import { UnwrapError } from "./unwrap.ts";
 
 interface ResultDef<T = unknown, E = Error> {
@@ -6,11 +6,12 @@ interface ResultDef<T = unknown, E = Error> {
     Err: E;
 }
 
+@Builders("Ok", "Err")
 export class Result<T = unknown, E extends Error = Error, V extends keyof ResultDef<T, E> = keyof ResultDef>
-    extends EnumStruct<ResultDef<T, E>, V>
+    extends EnumOfADT<ResultDef<T, E>, V>
 {
-    static Ok = builder(this, "Ok") as <const T, E extends Error>(value: T) => Result<T, E, "Ok">;
-    static Err = builder(this, "Err") as <const T, E extends Error>(err: E) => Result<T, E, "Err">;
+    declare static Ok: <const T, E extends Error>(value: T) => Result<T, E, "Ok">;
+    declare static Err: <const T, E extends Error>(err: E) => Result<T, E, "Err">;
 
     isOk(): this is this & Result<T, E, "Ok"> {
         return this.isVariant("Ok");

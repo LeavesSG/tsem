@@ -1,4 +1,4 @@
-export { EnumStruct } from "./enum-struct/mod.ts";
+export { EnumOfADT } from "./enum-struct/mod.ts";
 
 export * from "./enums/mod.ts";
 export * from "./match/mod.ts";

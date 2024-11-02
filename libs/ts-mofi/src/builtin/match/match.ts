@@ -1,6 +1,6 @@
 import { PHANTOM_MARKER } from "../../types/phantom.ts";
 import { UnionToTuple } from "../../utils/types.ts";
-import type { EnumStruct } from "../enum-struct/mod.ts";
+import type { EnumOfADT } from "../enum-struct/mod.ts";
 import { Result } from "../enums/result.ts";
 import { ParsePatExpr, PatExpressions, PossiblePatExpr } from "../pattern/expr.ts";
 import { _, Pattern } from "../pattern/pattern.ts";
@@ -12,7 +12,7 @@ interface Case<S = unknown, R = unknown, T extends PatExpressions = unknown> {
     onMatched: OnMatched<R, S & ParsePatExpr<T>>;
 }
 
-class MatchCasesNotExhaustiveError extends Error {}
+export class MatchCasesNotExhaustiveError extends Error {}
 
 class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
     private source: S;
@@ -28,15 +28,15 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
         this.cases = cases;
     }
 
-    case<R, const T extends PossiblePatExpr<UnionToTuple<Uncovered<S, C>>[number]>>(
+    when<R, const T extends PossiblePatExpr<UnionToTuple<Uncovered<S, C>>[number]>>(
         pat: T,
         ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
     ): CreateMatchObj<S, C, R, T>;
-    case<R, const T extends PatExpressions = typeof _>(
+    when<R, const T extends PatExpressions = typeof _>(
         pat: T,
         ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
     ): CreateMatchObj<S, C, R, T>;
-    case<R, const T extends PatExpressions = typeof _>(
+    when<R, const T extends PatExpressions = typeof _>(
         pat: T,
         ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
     ): CreateMatchObj<S, C, R, T> {
@@ -64,7 +64,7 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
 }
 
 export class Match<S> extends MatchOngoing<S, []> {
-    static match<const S extends EnumStruct<any, any>>(source: S): Match<MatchSplitEnum<S>>;
+    static match<const S extends EnumOfADT<any, any>>(source: S): Match<MatchSplitEnum<S>>;
     static match<S>(source: S): Match<S>;
     static match<S>(source: S) {
         return new this(source);
@@ -92,7 +92,7 @@ type CreateMatchObj<S, C extends Case<any, any, any>[], R, T> = IfExhaustive<S, 
     ? MatchExhausted<S, [...C, Case<S, R, T>]>
     : MatchOngoing<S, [...C, Case<S, R, T>]>;
 
-type MatchSplitEnum<Es extends EnumStruct<any, any>> = Es extends EnumStruct<infer Def, infer Var>
+type MatchSplitEnum<Es extends EnumOfADT<any, any>> = Es extends EnumOfADT<infer Def, infer Var>
     ? SplitVariant<Es, Def, Var>
     : Es;
 

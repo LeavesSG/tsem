@@ -1,8 +1,8 @@
 import type { PhantomMarker } from "../../types/phantom.ts";
-import type { EnumStruct } from "../enum-struct/mod.ts";
+import type { EnumOfADT } from "../enum-struct/mod.ts";
 
 export class UnwrapError extends Error {
-    static fromEnum<const I extends EnumStruct<any, any>>(
+    static fromEnum<const I extends EnumOfADT<any, any>>(
         targetEnum: I,
         requiredVariant: keyof I[PhantomMarker] & string,
     ) {

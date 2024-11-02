@@ -1,7 +1,7 @@
 import type { ConstructorType } from "../../types/cons.ts";
 import type { TypeOfName } from "../../types/typeof.ts";
 import { expr } from "../builtin.ts";
-import { EnumStruct } from "../enum-struct/mod.ts";
+import { EnumOfADT } from "../enum-struct/mod.ts";
 import { Option } from "../enums/option.ts";
 import { Result } from "../enums/result.ts";
 import { PropPath } from "../prop-path/prop-path.ts";
@@ -25,7 +25,7 @@ interface IMatchFailedMeta {
 }
 
 export class MatchFailedReason<V extends keyof IMatchFailedMeta = keyof IMatchFailedMeta>
-    extends EnumStruct<IMatchFailedMeta, V>
+    extends EnumOfADT<IMatchFailedMeta, V>
 {}
 
 export class PatternDebug<T = any> implements Clone {

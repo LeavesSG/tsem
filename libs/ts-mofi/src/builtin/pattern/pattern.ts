@@ -5,7 +5,7 @@ import type { PhantomMarker } from "../../types/phantom.ts";
 import { isTypeOf, isTypeOfNames, type TypeOfName } from "../../types/typeof.ts";
 import type { TupleIntersection } from "../../utils/types.ts";
 import { expr } from "../builtin.ts";
-import { EnumStruct } from "../enum-struct/mod.ts";
+import { EnumOfADT } from "../enum-struct/mod.ts";
 import { Option } from "../enums/option.ts";
 import { Result } from "../enums/result.ts";
 import { MatchFailedReason as Reason, PatternDebug } from "./debug.ts";
@@ -214,7 +214,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
     }
 
     static enumOf<
-        const T extends typeof EnumStruct<any, any>,
+        const T extends typeof EnumOfADT<any, any>,
         Var extends keyof InstanceType<T>[PhantomMarker] = keyof InstanceType<T>[PhantomMarker],
         Val extends InstanceType<T>[PhantomMarker][Var] = InstanceType<T>[PhantomMarker][Var],
     >(
@@ -304,10 +304,10 @@ implToPattern(Object, {
     },
 });
 
-implToPattern(EnumStruct, {
+implToPattern(EnumOfADT, {
     toPattern(): Pattern<typeof this> {
-        return new Pattern(<U>(target: U): target is U & EnumStruct<any, any> => {
-            const ctor = this.constructor as typeof EnumStruct;
+        return new Pattern(<U>(target: U): target is U & EnumOfADT<any, any> => {
+            const ctor = this.constructor as typeof EnumOfADT;
             if (!(target instanceof ctor)) return false;
             return target.isVariant(this.variant);
         });

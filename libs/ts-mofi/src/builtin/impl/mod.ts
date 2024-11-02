@@ -1,8 +1,8 @@
 import { todo } from "../dev.ts";
-import { Mixture } from "../mixture/mixture.ts";
+import { UniqMixture } from "../mixture/mixture.ts";
 
 const PROTO_PROXY = new WeakMap();
-const PROTO_IMPL = new WeakMap<WeakKey, Mixture>();
+const PROTO_IMPL = new WeakMap<WeakKey, UniqMixture>();
 export function impl<T, U>(target: T, implObj: U & ThisType<T>) {
     const proto = Object.getPrototypeOf(target);
     const protoProxy = PROTO_PROXY.get(proto) ?? new Proxy(proto, {

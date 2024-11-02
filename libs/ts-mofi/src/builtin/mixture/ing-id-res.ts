@@ -1,13 +1,14 @@
 import { ConstructorType } from "../../types/mod.ts";
-import { builder, EnumStruct } from "../enum-struct/mod.ts";
+import { type Builder, Builders, EnumOfADT } from "../enum-struct/mod.ts";
 import { MCtxIngId } from "./arch.ts";
 
 export interface IngIdRes {
-    Id: MCtxIngId;
-    Referred: ConstructorType;
+    Direct: MCtxIngId;
+    Shallow: Set<ConstructorType>;
 }
 
-export class IngredientIdRes extends EnumStruct<IngIdRes> {
-    static Id = builder(this, "Id");
-    static Referred = builder(this, "Referred");
+@Builders("Direct", "Shallow")
+export class IngredientIdRes extends EnumOfADT<IngIdRes> {
+    declare static Id: Builder<typeof IngredientIdRes>;
+    declare static Referred: Builder<typeof IngredientIdRes>;
 }

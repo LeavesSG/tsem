@@ -1,4 +1,4 @@
-import { builder, EnumStruct } from "../enum-struct/mod.ts";
+import { Builders, EnumOfADT } from "../enum-struct/mod.ts";
 import { UnwrapError } from "./unwrap.ts";
 
 interface OptionDef<T = unknown> {
@@ -6,11 +6,12 @@ interface OptionDef<T = unknown> {
     None: never;
 }
 
+@Builders("Some", "None")
 export class Option<const T = unknown, V extends keyof OptionDef<T> = keyof OptionDef<T>>
-    extends EnumStruct<OptionDef<T>, V>
+    extends EnumOfADT<OptionDef<T>, V>
 {
-    static Some = builder(this, "Some") as <const T>(item: T) => Option<T, "Some">;
-    static None = builder(this, "None") as <const T>() => Option<T, "None">;
+    declare static Some: <const T>(item: T) => Option<T, "Some">;
+    declare static None: <const T>() => Option<T, "None">;
 
     isSome(): this is this & Option<T, "Some"> {
         return this.isVariant("Some");

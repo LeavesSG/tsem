@@ -1,8 +1,8 @@
-import { PHANTOM_MARKER, type PhantomMarker } from "../../types/phantom.ts";
+import { PHANTOM_MARKER } from "../../types/phantom.ts";
 import type { Pattern } from "../pattern/pattern.ts";
 import { SYMBOL_TO_PATTERN } from "../pattern/to-pattern.ts";
 
-export class EnumStruct<
+export class EnumOfADT<
     Def = Record<string, unknown>,
     Var extends keyof Def & string = keyof Def & string,
 > {
@@ -15,7 +15,7 @@ export class EnumStruct<
         this.value = value;
     }
 
-    isVariant<const V2 extends keyof Def & string>(variant: V2): this is this & EnumStruct<Def, V2> {
+    isVariant<const V2 extends keyof Def & string>(variant: V2): this is this & EnumOfADT<Def, V2> {
         return this.variant as unknown as V2 === variant;
     }
 
@@ -28,27 +28,22 @@ export class EnumStruct<
         return new this(variant, value);
     }
 
-    declare [SYMBOL_TO_PATTERN]: Pattern<EnumStruct<Def, Var>>;
+    declare [SYMBOL_TO_PATTERN]: Pattern<EnumOfADT<Def, Var>>;
 }
 
-export function builder<const Es extends typeof EnumStruct<any, any>, const V extends keyof GetVs<Es> & string>(
-    ctor: Es,
-    variant: V,
-) {
-    return (...item: GetVs<Es>[V] extends never ? [] : [GetVs<Es>[V]]) => {
-        return new ctor(variant, item[0]) as InstanceType<Es> & EnumStruct<GetVs<Es>, V>;
+export function Builders<Def>(...variants: (keyof Def & string)[]) {
+    return (
+        target: typeof EnumOfADT<Def, keyof Def & string>,
+    ) => {
+        Object.defineProperties(
+            target,
+            Object.fromEntries(variants.map(v => [v, {
+                value: (value: Def[keyof Def & string]) => new target(v, value),
+            }])),
+        );
     };
 }
 
-export function genericBuilder<const Es extends typeof EnumStruct<any, any>, const V extends keyof GetVs<Es> & string>(
-    ctor: Es,
-    variant: V,
-) {
-    return <const T>(item: T) => {
-        return new ctor(variant, item) as
-            & InstanceType<Es>
-            & EnumStruct<{ [K in V]: T }, V>;
-    };
-}
-
-type GetVs<C extends typeof EnumStruct<any, any>> = InstanceType<C>[PhantomMarker];
+export type Builder<T extends typeof EnumOfADT<any, any>> = (
+    value: InstanceType<T>["value"],
+) => InstanceType<T>;
