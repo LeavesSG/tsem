@@ -1,18 +1,23 @@
 import { ImplCtx } from "./mod.ts";
 
+class Robot {
+    prefix = "I'm Robot.";
+    sayHi() {
+        console.log(this.prefix + "Hi!");
+    }
+}
+
 Deno.test("impl", () => {
     const ctx = new ImplCtx();
-    class Robot {
-        prefix = "I'm Robot.";
-        sayHi() {
-            console.log(this.prefix + "Hi!");
-        }
-    }
-    ctx.impl(Date, {
+
+    // type m =
+
+    ctx.impl(Robot, {
         sayGoodBey() {
             console.log(this.prefix = "GoodBey!");
         },
     });
-    const date = new Robot();
-    ctx.getImpl(date).sayGoodBey();
+    const robot = new Robot();
+    const impl = ctx.getImpl(robot);
+    console.log(impl.sayGoodBey());
 });

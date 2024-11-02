@@ -46,11 +46,11 @@ export class ImplCtx {
     getImpl(obj: object) {
         const getOrInitImplProxy = this.getOrInitImplProxy.bind(this);
         const getOrInitImpl = this.getOrInitImpl.bind(this);
-        this.updateImplProtoChain(Object.getPrototypeOf(obj));
+        this.updateImplProtoChain(obj);
         return new Proxy(obj, {
             get(target, p, receiver) {
                 if (Object.hasOwn(target, p)) return Reflect.get(target, p, receiver);
-                const implProxy = getOrInitImplProxy(getOrInitImpl(target));
+                const implProxy = getOrInitImplProxy(getOrInitImpl(Object.getPrototypeOf(target)));
                 return Reflect.get(implProxy, p, receiver);
             },
         });
@@ -64,12 +64,13 @@ export class ImplCtx {
         let ptr = impl;
         while (ptr) {
             const prototype = Object.getPrototypeOf(ptr);
+            if (!prototype) break;
             if (this.isImlProxy(prototype)) {
                 ptr = prototype;
                 continue;
             }
             const implProxy = this.getOrInitImplProxy(this.getOrInitImpl(prototype));
-            Object.setPrototypeOf(ptr, impl);
+            Object.setPrototypeOf(ptr, implProxy);
             Object.setPrototypeOf(implProxy, Object.getPrototypeOf(prototype));
         }
     }
