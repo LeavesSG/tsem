@@ -4,7 +4,7 @@ import { type ConstructorType, isConstructorType } from "../../types/mod.ts";
 import type { PhantomMarker } from "../../types/phantom.ts";
 import { isTypeOf, isTypeOfNames, type TypeOfName } from "../../types/typeof.ts";
 import type { TupleIntersection } from "../../utils/types.ts";
-import { expr } from "../builtin.ts";
+import { bound, expr } from "../builtin.ts";
 import { EnumOfADT } from "../enum-struct/mod.ts";
 import { Option } from "../enums/option.ts";
 import { Result } from "../enums/result.ts";
@@ -265,13 +265,9 @@ export class Pattern<T = unknown> implements ToPattern<T> {
 export const Pat = Pattern;
 export const { any, never, _, string, number, array, bigint, boolean, function: func } = Pattern;
 
-export const { arrOf, ctorOf, instOf, enumOf, equal, union, intersect, tuple, struct, typeOf, from: pattern } =
-    new Proxy(Pat, {
-        get(target, prop, rec) {
-            const res = Reflect.get(target, prop, rec);
-            return func.match(res) && res.bind(Pattern) || res;
-        },
-    });
+export const { arrOf, ctorOf, instOf, enumOf, equal, union, intersect, tuple, struct, typeOf, from: pattern } = bound(
+    Pattern,
+);
 
 implToPattern(String, {
     toPattern(): Pattern<unknown> {

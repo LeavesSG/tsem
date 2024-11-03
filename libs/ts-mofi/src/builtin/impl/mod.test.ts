@@ -1,4 +1,4 @@
-import { ImplCtx, MarkImpl } from "./mod.ts";
+import { impl, MarkImpl, withImpl } from "./mod.ts";
 
 class Robot {
     prefix = "I'm Robot.";
@@ -14,14 +14,12 @@ interface SayGoodBye {
 interface Robot extends MarkImpl<SayGoodBye> {}
 
 Deno.test("impl", () => {
-    const ctx = new ImplCtx();
-
-    ctx.impl<Robot, SayGoodBye>(Robot, {
+    impl<Robot, SayGoodBye>(Robot, {
         sayGoodBey() {
             console.log(this.prefix = "GoodBey!");
         },
     });
     const robot = new Robot();
-    const impl = ctx.implOf(robot);
-    console.log(impl.sayGoodBey());
+    const implObj = withImpl(robot);
+    implObj.sayGoodBey();
 });
