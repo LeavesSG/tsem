@@ -1,6 +1,39 @@
+/**
+ * This module contains feature of runtime implementation for classes.
+ * @module
+ */
+
 import { bound, expr } from "../utils/mod.ts";
 import type { ConstructorType } from "../vanilla/mod.ts";
 
+/**
+ * Implementation context. Implementations are registered inside the scope and could only
+ * be accessed within the scope. A default global scope is exported. It recommended to use
+ * to use the default scope in most cases.
+ * This is a runtime feature, it will need some declarations from user to provide type inference
+ * and annotation. See example for details.
+ *
+ * @example
+ * ```ts
+ * const ctx = GLOBAL_IMPL_CTX;
+ * interface Cmp {
+ *    cmp(other: this): -1 | 0 | 1;
+ * }
+ * declare global {
+ *    // this will allow to define implementation elsewhere.
+ *    interface DateImpl extends Cmp {}
+ *    interface Date extends DateImpl {}
+ * }
+ * ctx.impl(Date, {
+ *    cmp(other: Date): -1 | 0 | 1 {
+ *        if (this.getTime() > other.getTime()) return 1;
+ *        else if (other.getTime() > this.getTime()) return -1;
+ *        return 0;
+ *    },
+ * });
+ * ctx.withImpl(new Date("2024-01-01")).cmp(new Date("2024-1-1"));
+ * ```
+ */
 export class ImplCtx {
     private proto2ImplObj = new WeakMap();
     private proto2ImplProxy = new WeakMap();
@@ -19,7 +52,7 @@ export class ImplCtx {
         };
     });
 
-    getOrInitImpl(prototype: object) {
+    private getOrInitImpl(prototype: object) {
         const mayExistedImpl = this.proto2ImplObj.get(prototype);
         if (mayExistedImpl) return mayExistedImpl;
         const impl = {};
@@ -28,7 +61,7 @@ export class ImplCtx {
         return impl;
     }
 
-    getOrInitImplProxy(impl: object) {
+    private getOrInitImplProxy(impl: object) {
         const mayExistedProxy = this.proto2ImplProxy.get(impl);
         if (mayExistedProxy) return mayExistedProxy;
         const proxy = new Proxy(impl, this.implProxyHandler);
@@ -37,13 +70,22 @@ export class ImplCtx {
         return proxy;
     }
 
-    impl<T, U>(target: ConstructorType<T>, implObj: U & ThisType<T>) {
+    /**
+     * Implement features for target constructor.
+     * @param target target constructor (or an object with `prototype` property).
+     * @param implObj object contains implementation methods.
+     */
+    public impl<T, U>(target: ConstructorType<T>, implObj: U & ThisType<T>) {
         const prototype = target.prototype;
         const impl = this.getOrInitImpl(prototype);
         Object.assign(impl, implObj);
     }
 
-    withImpl<T extends object>(obj: T): WithImpl<T> {
+    /**
+     * A proxy of object, that contains all methods implemented for its contructor (or prototype).
+     * @param obj target object.
+     */
+    public withImpl<T extends object>(obj: T): WithImpl<T> {
         const getOrInitImplProxy = this.getOrInitImplProxy.bind(this);
         const getOrInitImpl = this.getOrInitImpl.bind(this);
         this.updateImplProtoChain(obj);
@@ -60,11 +102,11 @@ export class ImplCtx {
         }) as WithImpl<T>;
     }
 
-    isImlProxy(obj: object) {
+    private isImlProxy(obj: object) {
         return this.implProxies.has(obj);
     }
 
-    updateImplProtoChain(impl: object) {
+    private updateImplProtoChain(impl: object) {
         let ptr = impl;
         while (ptr) {
             const prototype = Object.getPrototypeOf(ptr);

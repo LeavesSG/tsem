@@ -3,8 +3,6 @@ import type { Pattern } from "./pattern.ts";
 
 export const SYMBOL_TO_PATTERN = Symbol("[Pattern]:to pattern");
 
-export const SymbolToPattern = typeof SYMBOL_TO_PATTERN;
-
 export interface ToPattern<T = any> {
     [SYMBOL_TO_PATTERN](): Pattern<T>;
 }

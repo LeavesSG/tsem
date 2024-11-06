@@ -7,7 +7,7 @@ import type {
 } from "../pattern/mod.ts";
 import { _, Pattern } from "../pattern/mod.ts";
 import { PHANTOM_MARKER } from "../shared/mod.ts";
-import type { UnionToTuple } from "../utils/mod.ts";
+import type { UnionToTuple } from "../utils/union-type.ts";
 
 type OnMatched<R, E> = (expr: E) => R;
 

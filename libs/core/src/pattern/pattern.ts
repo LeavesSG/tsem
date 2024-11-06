@@ -2,8 +2,8 @@ import { EnumOfADT } from "../adt/mod.ts";
 import { Option, Result } from "../enums/mod.ts";
 import { type FunctionType, hasImplToPattern } from "../mod.ts";
 import type { PHANTOM_MARKER } from "../shared/mod.ts";
-import type { TupleIntersection } from "../utils/mod.ts";
 import { bound, expr } from "../utils/mod.ts";
+import type { TupleIntersection } from "../utils/union-type.ts";
 import {
     CONSTRUCTOR_PROTOTYPE,
     type ConstructorType,
@@ -58,7 +58,7 @@ const debugIsTypeOf: <T extends TypeOfName>(
             const [_, debug = DISABLED_DEBUG] = argArray;
             const res = Reflect.apply(target, thisArg, argArray);
             return res && debug.success() || debug.fail(
-                Reason.inst("NotTypeOf", typeName),
+                new Reason("NotTypeOf", typeName),
             );
         },
     });
@@ -132,7 +132,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
     static never: Pattern<never> = new this((
         _target: unknown,
         debug = DISABLED_DEBUG,
-    ): _target is never => debug.fail(Reason.inst("NotNever", undefined)));
+    ): _target is never => debug.fail(new Reason("NotNever", undefined)));
 
     static string: Pattern<string> = new this(debugIsTypeOf("string"));
     static number: Pattern<number> = new this(debugIsTypeOf("number"));
@@ -149,7 +149,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
         target,
         debug = DISABLED_DEBUG,
     ): target is number =>
-        Number.isNaN(target) || debug.fail(Reason.inst("NotEqualTo", NaN))
+        Number.isNaN(target) || debug.fail(new Reason("NotEqualTo", NaN))
     );
 
     static array: Pattern<unknown[]> = this.arrOf(this._);
@@ -167,7 +167,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
             debug = DISABLED_DEBUG,
         ): target is U & T =>
             (target as never) === expr && debug.success() ||
-            debug.fail(Reason.inst("NotEqualTo", expr))
+            debug.fail(new Reason("NotEqualTo", expr))
         );
     }
 
@@ -180,13 +180,13 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 debug: Debug<U> = DISABLED_DEBUG,
             ): target is U & PatExprParser<T>[PatExpr.Tuple] => {
                 if (!Array.isArray(target)) {
-                    return debug.fail(Reason.inst("NotInstanceOf", Array));
+                    return debug.fail(new Reason("NotInstanceOf", Array));
                 }
                 return Array.isArray(target) && expr.every((child, index) => {
                     const dived = debug.dive(index as keyof U);
                     const res = Pattern.from(child).exec(target[index], dived);
                     return res.isOk() && debug.success() || debug.fail(
-                        Reason.inst("NotMatchAtIndex", index),
+                        new Reason("NotMatchAtIndex", index),
                         res.value,
                     );
                 });
@@ -205,11 +205,11 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 debug: Debug<U> = DISABLED_DEBUG,
             ): target is U & PatExprParser<T>[PatExpr.Struct] => {
                 if (!target || typeof target !== "object") {
-                    return debug.fail(Reason.inst("NotTypeOf", "object"));
+                    return debug.fail(new Reason("NotTypeOf", "object"));
                 }
                 return Object.entries(expr).every(([key, value]) => {
                     if (!(key in target)) {
-                        return debug.fail(Reason.inst("MissingProp", void 0));
+                        return debug.fail(new Reason("MissingProp", void 0));
                     }
                     const dived = debug.dive(key as keyof U);
                     const res = Pattern.from(value).exec(
@@ -217,7 +217,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                         dived,
                     );
                     return res.isOk() && debug.success() || debug.fail(
-                        Reason.inst("NotMatchAtProp", key),
+                        new Reason("NotMatchAtProp", key),
                         res.value as Error,
                     );
                 });
@@ -234,7 +234,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 debug: Debug<U> = DISABLED_DEBUG,
             ): target is PatExprParser<T>[PatExpr.InstanceOf] => {
                 if (target instanceof expr) return debug.success();
-                return debug.fail(Reason.inst("NotInstanceOf", expr));
+                return debug.fail(new Reason("NotInstanceOf", expr));
             },
         );
     }
@@ -247,11 +247,11 @@ export class Pattern<T = unknown> implements ToPattern<T> {
             ): target is U & ConstructorType<T> => {
                 if (!isConstructorType(target)) {
                     return debug.fail(
-                        Reason.inst("NotConstructorOf", CONSTRUCTOR_PROTOTYPE),
+                        new Reason("NotConstructorOf", CONSTRUCTOR_PROTOTYPE),
                     );
                 }
                 if (expr instanceof target) return debug.success();
-                return debug.fail(Reason.inst("NotConstructorOf", expr));
+                return debug.fail(new Reason("NotConstructorOf", expr));
             },
         );
     }
@@ -267,7 +267,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 return expr.some((expr) => {
                     const pattern = this.from(expr);
                     return pattern.exec(target).isOk();
-                }) || debug.fail(Reason.inst("NotMatchAnyOfUnion", undefined));
+                }) || debug.fail(new Reason("NotMatchAnyOfUnion", undefined));
             },
         );
     }
@@ -283,7 +283,7 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 const res = this.from(exp).exec(target, dived);
                 return res.isOk() && debug.success() ||
                     debug.fail(
-                        Reason.inst("NotMatchIntersection", index),
+                        new Reason("NotMatchIntersection", index),
                         res.value as Error,
                     );
             })
@@ -298,14 +298,14 @@ export class Pattern<T = unknown> implements ToPattern<T> {
             ): target is ParsePatExpr<T>[] => {
                 if (!(Array.isArray(target))) {
                     return debug.fail(
-                        Reason.inst("NotInstanceOf", Array),
+                        new Reason("NotInstanceOf", Array),
                     );
                 }
                 const pattern = this.from(expr);
                 return target.every((child, index) => {
                     const res = pattern.exec(child);
                     return res.isOk() && debug.success() ||
-                        debug.fail(Reason.inst("NotMatchAtIndex", index));
+                        debug.fail(new Reason("NotMatchAtIndex", index));
                 });
             },
         );
@@ -329,21 +329,21 @@ export class Pattern<T = unknown> implements ToPattern<T> {
                 debug = DISABLED_DEBUG,
             ): target is U & InstanceType<T> => {
                 if (!(target instanceof enumCtor)) {
-                    return debug.fail(Reason.inst("NotInstanceOf", enumCtor));
+                    return debug.fail(new Reason("NotInstanceOf", enumCtor));
                 }
                 const varRes: Result<unknown, Error> = this.from(variant).exec(
                     target.variant,
                 );
                 if (varRes.isErr()) {
                     return debug.fail(
-                        Reason.inst("NotMatchEnumVariant", variant as string),
+                        new Reason("NotMatchEnumVariant", variant as string),
                         varRes.value,
                     );
                 }
                 const valRes = this.from(value).exec(target.value);
                 if (valRes.isErr()) {
                     debug.fail(
-                        Reason.inst("NotMatchEnumValue", value),
+                        new Reason("NotMatchEnumValue", value),
                         valRes.value,
                     );
                 }

@@ -2,6 +2,7 @@
     "name": "@ts-mofi/core",
     "version": "0.1.0",
     "exports": "./mod.ts",
+    "exclude": ["**/*.test.ts"],
     "lint": {
         "exclude": ["**/*.test.ts"],
         "rules": {
