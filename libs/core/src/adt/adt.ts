@@ -1,6 +1,6 @@
 /**
  * This module contains a class style implementation for `Enum of ADT` proposal.
- * @module
+ * @module adt
  */
 
 import { SYMBOL_PHANTOM } from "../shared/mod.ts";

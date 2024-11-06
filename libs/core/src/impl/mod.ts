@@ -1,6 +1,7 @@
 /**
+ * @module Impl
+ *
  * This module contains feature of runtime implementation for classes.
- * @module
  */
 
 import { bound, expr } from "../utils/mod.ts";

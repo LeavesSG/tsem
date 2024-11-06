@@ -1,6 +1,6 @@
 /**
  * This module contains useful enums.
- * @module
+ * @module enums
  */
 
 export { Option } from "./option.ts";
