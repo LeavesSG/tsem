@@ -43,10 +43,10 @@ class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
         pat: T,
         ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
     ): CreateMatchObj<S, C, R, T>;
-    when<R, const T extends PatExpressions = typeof _>(
-        pat: T,
-        ifMatched: OnMatched<R, S & ParsePatExpr<T>>,
-    ): CreateMatchObj<S, C, R, T> {
+    when(
+        pat: any,
+        ifMatched: any,
+    ): CreateMatchObj<S, C, any, any> {
         return new MatchExhausted(this.source, ...this.cases, {
             pat,
             onMatched: ifMatched,

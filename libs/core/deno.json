@@ -21,5 +21,6 @@
         "noImplicitThis": true,
 
         "lib": ["dom", "deno.ns", "esnext"]
-    }
+    },
+    "license": "MIT"
 }
