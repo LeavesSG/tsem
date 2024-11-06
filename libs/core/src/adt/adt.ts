@@ -1,3 +1,8 @@
+/**
+ * This module contains a class style implementation for `Enum of ADT` proposal.
+ * @module
+ */
+
 import { PHANTOM_MARKER } from "../shared/mod.ts";
 
 /**

@@ -4,6 +4,7 @@ export * from "./shared/mod.ts";
 export * from "./utils/mod.ts";
 export * from "./vanilla/mod.ts";
 
+export * from "./impl/mod.ts";
 export * from "./mixture/mod.ts";
 export * from "./traits/mod.ts";
 
