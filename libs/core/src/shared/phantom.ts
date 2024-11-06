@@ -6,11 +6,11 @@ export type PhantomData<T> = T extends never ? never : never;
 /**
  * A symbol used for marking phantom data.
  */
-export const PHANTOM_MARKER = Symbol("Phantom Data");
+export const SYMBOL_PHANTOM = Symbol("Phantom Data marker");
 
 /**
  * Type that has a phantom marker.
  */
 export interface PhantomMarked<T> {
-    [PHANTOM_MARKER]: T;
+    [SYMBOL_PHANTOM]: T;
 }

@@ -126,11 +126,13 @@ export class ImplCtx {
 
 export const SYMBOL_IMPL = Symbol("impl marker");
 
-export type MarkImpl<Traits> = {
+type MarkImpl<Traits> = {
     [SYMBOL_IMPL]: Traits;
 };
 
-export type WithImpl<T> = T extends MarkImpl<infer R> ? T & R : T;
+type WithImpl<T> = T extends MarkImpl<infer R> ? T & R : T;
+export const GLOBAL_IMPL_CTX: ImplCtx = new ImplCtx();
 
-const GLOBAL_IMPL_CTX = new ImplCtx();
-export const { impl, withImpl } = bound(GLOBAL_IMPL_CTX);
+const boundGlobalImpl = bound(GLOBAL_IMPL_CTX);
+export const impl: ImplCtx["impl"] = boundGlobalImpl.impl;
+export const withImpl: ImplCtx["withImpl"] = boundGlobalImpl.withImpl;

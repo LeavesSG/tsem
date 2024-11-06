@@ -1,4 +1,4 @@
-import { PHANTOM_MARKER } from "../shared/phantom.ts";
+import { SYMBOL_PHANTOM } from "../shared/phantom.ts";
 import type { Clone } from "../traits/clone.ts";
 import type { ObjKey } from "../vanilla/obj.ts";
 
@@ -6,7 +6,7 @@ export class PropPath<S = any, P extends ObjKey[] = ObjKey[]> implements Clone {
     private sourceObj: S;
     private keyPath = [] as unknown as P;
 
-    declare [PHANTOM_MARKER]: {
+    declare [SYMBOL_PHANTOM]: {
         probed: ThroughPath<S, P>;
     };
 
@@ -27,7 +27,7 @@ export class PropPath<S = any, P extends ObjKey[] = ObjKey[]> implements Clone {
         return cloned as typeof this;
     }
 
-    prop<const K extends keyof this[typeof PHANTOM_MARKER]["probed"]>(
+    prop<const K extends keyof this[typeof SYMBOL_PHANTOM]["probed"]>(
         propKey: K,
     ): PropPath<S, [...P, K]> {
         const cloned = this.clone();
@@ -35,7 +35,7 @@ export class PropPath<S = any, P extends ObjKey[] = ObjKey[]> implements Clone {
         return cloned as unknown as PropPath<S, [...P, K]>;
     }
 
-    probe(): this[typeof PHANTOM_MARKER]["probed"] {
+    probe(): this[typeof SYMBOL_PHANTOM]["probed"] {
         return this.keyPath.reduce((a: any, c) => a[c], this.sourceObj);
     }
 

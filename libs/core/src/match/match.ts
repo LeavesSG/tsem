@@ -6,7 +6,7 @@ import type {
     PossiblePatExpr,
 } from "../pattern/mod.ts";
 import { _, Pattern } from "../pattern/mod.ts";
-import { PHANTOM_MARKER } from "../shared/mod.ts";
+import { SYMBOL_PHANTOM } from "../shared/mod.ts";
 import type { UnionToTuple } from "../utils/union-type.ts";
 
 type OnMatched<R, E> = (expr: E) => R;
@@ -21,7 +21,7 @@ export class MatchCasesNotExhaustiveError extends Error {}
 class MatchOngoing<S = unknown, C extends Case<S, any, any>[] = []> {
     private source: S;
     private cases: C;
-    declare [PHANTOM_MARKER]: {
+    declare [SYMBOL_PHANTOM]: {
         uncover: Uncovered<S, C>;
         covered: MatchCovered<C>;
         exhaustive: IfExhaustive<S, C>;

@@ -1,4 +1,4 @@
-import { PHANTOM_MARKER, type PhantomData, todo } from "../shared/mod.ts";
+import { type PhantomData, SYMBOL_PHANTOM, todo } from "../shared/mod.ts";
 import { applyMixins } from "../utils/mod.ts";
 import type { ConstructorType, InstanceIntersection } from "../vanilla/mod.ts";
 import type { MCtxMixKey } from "./arch.ts";
@@ -74,7 +74,7 @@ export interface UniqMixture<
 }
 
 export class UniqMixture<T = unknown, Ctx extends WeakKey = typeof globalThis> {
-    declare [PHANTOM_MARKER]: PhantomData<[T, Ctx]>;
+    declare [SYMBOL_PHANTOM]: PhantomData<[T, Ctx]>;
     declare constructors: ConstructorType[];
     declare context: MixtureCtx;
 
@@ -95,7 +95,7 @@ export class UniqMixture<T = unknown, Ctx extends WeakKey = typeof globalThis> {
         const found = context.getCachedArch(mixKey);
         if (found) return found as UniqMixture<T, Ctx>;
         class MixedMixture {
-            declare static [PHANTOM_MARKER]: PhantomData<[T, Ctx]>;
+            declare static [SYMBOL_PHANTOM]: PhantomData<[T, Ctx]>;
             static constructors = ctors;
             static [SYMBOL_NON_INGREDIENT] = true;
             static context = context;
@@ -132,7 +132,7 @@ export interface Mixture<T = unknown> {
 
 const SYMBOL_MIXTURE = Symbol("mixture");
 export class Mixture<T = unknown> {
-    declare [PHANTOM_MARKER]: PhantomData<T>;
+    declare [SYMBOL_PHANTOM]: PhantomData<T>;
     declare constructors: Set<ConstructorType>;
     constructor(...ctors: ConstructorType[]) {
         const constructors = new Set(
@@ -140,7 +140,7 @@ export class Mixture<T = unknown> {
         );
 
         class MixedMixture {
-            declare static [PHANTOM_MARKER]: PhantomData<T>;
+            declare static [SYMBOL_PHANTOM]: PhantomData<T>;
             static constructors = constructors;
             static [SYMBOL_NON_INGREDIENT] = true;
             static [SYMBOL_MIXTURE] = true;

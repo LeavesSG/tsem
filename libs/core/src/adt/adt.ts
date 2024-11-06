@@ -3,7 +3,7 @@
  * @module
  */
 
-import { PHANTOM_MARKER } from "../shared/mod.ts";
+import { SYMBOL_PHANTOM } from "../shared/mod.ts";
 
 /**
  * Use generic classes to implement Enum of ADT proposal.
@@ -25,7 +25,7 @@ export class EnumOfADT<
     Def = Record<string, unknown>,
     Var extends keyof Def & string = keyof Def & string,
 > {
-    declare [PHANTOM_MARKER]: Def;
+    declare [SYMBOL_PHANTOM]: Def;
 
     /**
      * Variant

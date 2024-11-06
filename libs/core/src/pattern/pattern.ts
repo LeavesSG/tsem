@@ -1,7 +1,7 @@
 import { EnumOfADT } from "../adt/mod.ts";
 import { Option, Result } from "../enums/mod.ts";
 import { type FunctionType, hasImplToPattern } from "../mod.ts";
-import type { PHANTOM_MARKER } from "../shared/mod.ts";
+import type { SYMBOL_PHANTOM } from "../shared/mod.ts";
 import { bound, expr } from "../utils/mod.ts";
 import type { TupleIntersection } from "../utils/union-type.ts";
 import {
@@ -313,11 +313,11 @@ export class Pattern<T = unknown> implements ToPattern<T> {
 
     static enumOf<
         const T extends typeof EnumOfADT<any, any>,
-        Var extends keyof InstanceType<T>[typeof PHANTOM_MARKER] =
-            keyof InstanceType<T>[typeof PHANTOM_MARKER],
-        Val extends InstanceType<T>[typeof PHANTOM_MARKER][Var] = InstanceType<
+        Var extends keyof InstanceType<T>[typeof SYMBOL_PHANTOM] =
+            keyof InstanceType<T>[typeof SYMBOL_PHANTOM],
+        Val extends InstanceType<T>[typeof SYMBOL_PHANTOM][Var] = InstanceType<
             T
-        >[typeof PHANTOM_MARKER][Var],
+        >[typeof SYMBOL_PHANTOM][Var],
     >(
         enumCtor: T,
         variant: Var | Pattern<Var> = _ as Pattern<Var>,
