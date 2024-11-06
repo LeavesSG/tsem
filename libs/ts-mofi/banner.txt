@@ -1,4 +1,0 @@
-/**
- * TS_MOFI: TypeScript with MOdern Features Implemented.
- * @author Tianyi Liu <l.lty@outlook.com>
-*/

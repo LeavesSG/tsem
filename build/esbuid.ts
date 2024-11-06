@@ -19,35 +19,35 @@ async function buildApp(appName: string) {
         bundle: true,
         format: "esm",
         outfile: `dist/${appName}.js`,
-        entryPoints: [`libs/${appName}/src/lib.ts`],
+        entryPoints: [`libs/${appName}/src/mod.ts`],
         target: [
             "esnext",
         ],
-        banner: {
-            js: await tryGetAppBanner(appName),
-        },
+        // banner: {
+        //     js: await tryGetAppBanner(appName),
+        // },
     });
     stop();
 }
 
-async function tryGetAppBanner(appName: string) {
-    const bannerPath = `libs/${appName}/banner.txt`;
-    const file = await Deno.open(bannerPath, { read: true });
-    const fileInfo = await file.stat();
+// async function tryGetAppBanner(appName: string) {
+//     const bannerPath = `libs/${appName}/banner.txt`;
+//     const file = await Deno.open(bannerPath, { read: true });
+//     const fileInfo = await file.stat();
 
-    let banner = getDefaultBanner(appName);
-    if (fileInfo.isFile) {
-        const buf = new Uint8Array(fileInfo.size);
-        await file.read(buf);
-        banner = new TextDecoder().decode(buf);
-    }
-    file.close();
-    return banner;
-}
+//     let banner = getDefaultBanner(appName);
+//     if (fileInfo.isFile) {
+//         const buf = new Uint8Array(fileInfo.size);
+//         await file.read(buf);
+//         banner = new TextDecoder().decode(buf);
+//     }
+//     file.close();
+//     return banner;
+// }
 
-function getDefaultBanner(appName: string) {
-    return `/**
-    * ${appName}
-    * @author Tianyi Liu <l.lty@outlook.com>
-    */`;
-}
+// function getDefaultBanner(appName: string) {
+//     return `/**
+//     * ${appName}
+//     * @author Tianyi Liu <l.lty@outlook.com>
+//     */`;
+// }

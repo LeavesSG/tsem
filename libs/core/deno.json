@@ -1,0 +1,25 @@
+{
+    "name": "@ts-mofi/core",
+    "version": "0.1.0",
+    "exports": "./mod.ts",
+    "lint": {
+        "exclude": ["**/*.test.ts"],
+        "rules": {
+            "exclude": ["no-explicit-any"],
+            "tags": ["recommended", "fresh", "jsr"]
+        }
+    },
+    "fmt": {
+        "indentWidth": 4
+    },
+    "compilerOptions": {
+        "noUnusedParameters": true,
+        "noErrorTruncation": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+        "noImplicitThis": true,
+
+        "lib": ["dom", "deno.ns", "esnext"]
+    }
+}
