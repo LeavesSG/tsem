@@ -6,17 +6,17 @@ import type { ToPattern } from "./to-pattern.ts";
 
 export enum PatExpr {
     /** Expr is a object that implements `ToPattern` interface. */
-    ToPattern,
+    ToPattern = "to pattern",
     /** Expr that matches a primitive value, with expr as its type string. */
-    Typeof,
+    Typeof = "type of",
     /** Expr that matches a constructor instance, with expr as its constructor type. */
-    InstanceOf,
+    InstanceOf = "instance of",
     /** Expr that matches a tuple type, with each corresponding member also matched. */
-    Tuple,
+    Tuple = "tuple",
     /** Expr that matches a struct type, with value in each corresponding KV pairs also matched. */
-    Struct,
+    Struct = "struct",
     /** Expr that match value strictly equals itself. */
-    Literal,
+    Literal = "literal",
 }
 
 export interface PatExprForm {
@@ -63,8 +63,7 @@ type MatchPatExprVariant<
 
 export type ParsePatExpr<T> = PatExprParser<T>[MatchPatExprVariant<T>];
 
-export type ParseTuplePatExpr<T extends unknown[]> = T extends
-    [infer R, ...infer Rest extends unknown[]]
+export type ParseTuplePatExpr<T extends unknown[]> = T extends [infer R, ...infer Rest extends unknown[]]
     ? [ParsePatExpr<R>, ...ParseTuplePatExpr<Rest>]
     : [];
 
@@ -77,8 +76,7 @@ interface PossiblePatExprDict<T = unknown> {
     [PatExpr.Tuple]: PossibleTupleExpr<T>;
     [PatExpr.Struct]: PossibleStructExpr<T>;
     [PatExpr.Literal]: T;
-    [PatExpr.InstanceOf]: Extract<T, object> extends infer R extends object
-        ? ConstructorType<R>
+    [PatExpr.InstanceOf]: Extract<T, object> extends infer R extends object ? ConstructorType<R>
         : never | ConsOf<T>;
     [PatExpr.ToPattern]: ToPattern<T>;
     Array: T extends any[] ? Pattern<T[number][]> : never;
@@ -87,8 +85,7 @@ interface PossiblePatExprDict<T = unknown> {
 export type PossiblePatExpr<T> = PossiblePatExprDict<
     T
 >[keyof PossiblePatExprDict];
-type PossibleTupleExpr<T, __R = never> = T extends [...infer R, any[]]
-    ? PossiblePatExpr<R>
+type PossibleTupleExpr<T, __R = never> = T extends [...infer R, any[]] ? PossiblePatExpr<R>
     : __R;
 type PossibleStructExpr<T> = T extends Record<string, unknown> ? {
         [K in keyof T]: PossiblePatExpr<T[K]>;
