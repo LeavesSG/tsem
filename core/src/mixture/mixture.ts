@@ -70,7 +70,7 @@ export interface UniqMixture<
     T = unknown,
     Ctx extends WeakKey = typeof globalThis,
 > {
-    new (...args: never[]): T & UniqMixture<T>;
+    new(...args: never[]): T & UniqMixture<T>;
 }
 
 export class UniqMixture<T = unknown, Ctx extends WeakKey = typeof globalThis> {
@@ -127,7 +127,7 @@ export class UniqMixture<T = unknown, Ctx extends WeakKey = typeof globalThis> {
 }
 
 export interface Mixture<T = unknown> {
-    new (...args: never[]): T & Mixture<T>;
+    new(...args: [T]): T & Mixture<T>;
 }
 
 const SYMBOL_MIXTURE = Symbol("mixture");
@@ -144,6 +144,9 @@ export class Mixture<T = unknown> {
             static constructors = constructors;
             static [SYMBOL_NON_INGREDIENT] = true;
             static [SYMBOL_MIXTURE] = true;
+            constructor(kvs: T) {
+                Object.assign(this, kvs);
+            }
         }
         applyMixins(MixedMixture, [...ctors, Mixture]);
         return applyOrigin(MixedMixture, Mixture) as any;
@@ -200,8 +203,8 @@ function applyOrigin<T, U extends ConstructorType>(target: T, source: U) {
         Object.defineProperty(
             target,
             name,
-            Object.getOwnPropertyDescriptor(source.prototype, name) ||
-                Object.create(null),
+            Object.getOwnPropertyDescriptor(source.prototype, name)
+                || Object.create(null),
         );
     });
     return target as T & InstanceType<U>;
