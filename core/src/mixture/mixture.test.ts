@@ -3,28 +3,32 @@ import { Mixture } from "./mixture.ts";
 
 Deno.test("Mixture", () => {
     class Cat {
+        meowWord!: string;
+        meowCb!: () => any;
         meow() {
             console.log("m");
         }
     }
 
     class Dog {
+        woffWord?: string;
         woff() {
             console.log("w");
         }
     }
 
     class Koala {
+        zzzWord!: string;
         zzz() {
             console.log("k");
         }
     }
 
-    const mixture = Mixture.from(Cat, Dog, Koala);
+    const mixture = new Mixture(Cat, Dog, Koala);
     const m = new mixture();
     m.meow();
     m.woff();
     m.zzz();
-    const mixture2 = Mixture.from(Dog, Koala, Cat);
+    const mixture2 = new Mixture(Cat, Dog, Koala);
     assertEquals(mixture.equals(mixture2), true);
 });

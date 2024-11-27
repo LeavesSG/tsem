@@ -1,6 +1,7 @@
 import { type PhantomData, SYMBOL_PHANTOM, todo } from "../shared/mod.ts";
 import { applyMixins } from "../utils/mod.ts";
-import type { ConstructorType, InstanceIntersection } from "../vanilla/mod.ts";
+import type { ConstructorArrayOf } from "../vanilla/ctor.ts";
+import type { ConstructorType, InstanceArrayOf, InstanceIntersection } from "../vanilla/mod.ts";
 import type { MCtxMixKey } from "./arch.ts";
 import type { IngredientIdRes } from "./ing-id-res.ts";
 
@@ -126,26 +127,28 @@ export class UniqMixture<T = unknown, Ctx extends WeakKey = typeof globalThis> {
     }
 }
 
-export interface Mixture<T = unknown> {
-    new(...args: [T]): T & Mixture<T>;
+export interface Mixture<T extends ConstructorType[] = ConstructorType[]> {
+    new(): InstanceIntersection<T> & Mixture<T>;
 }
 
 const SYMBOL_MIXTURE = Symbol("mixture");
-export class Mixture<T = unknown> {
-    declare [SYMBOL_PHANTOM]: PhantomData<T>;
-    declare constructors: Set<ConstructorType>;
-    constructor(...ctors: ConstructorType[]) {
-        const constructors = new Set(
+export class Mixture<T extends ConstructorType[] = ConstructorType[]> {
+    declare [SYMBOL_PHANTOM]: PhantomData<InstanceIntersection<T>>;
+    declare ctors: T;
+    declare ctorSet: Set<T[number]>;
+    constructor(...ctors: T) {
+        const ctorSet = new Set(
             ctors.map((c) => [...flatPrototype(c)]).flat(),
         );
 
         class MixedMixture {
             declare static [SYMBOL_PHANTOM]: PhantomData<T>;
-            static constructors = constructors;
+            static ctors = ctors;
+            static ctorSet = ctorSet;
             static [SYMBOL_NON_INGREDIENT] = true;
             static [SYMBOL_MIXTURE] = true;
-            constructor(kvs: T) {
-                Object.assign(this, kvs);
+            constructor(...instances: InstanceArrayOf<T>) {
+                Object.assign(this, ...instances);
             }
         }
         applyMixins(MixedMixture, [...ctors, Mixture]);
@@ -159,27 +162,30 @@ export class Mixture<T = unknown> {
     /**
      * @param ctors constructor types
      */
-    static from<T extends ConstructorType[] = []>(
-        ...ctors: [...T]
-    ): Mixture<InstanceIntersection<T>> {
-        return new this(...ctors);
+    static from<T extends object[] = []>(
+        ...instances: T
+    ): Mixture<ConstructorArrayOf<T>> {
+        const ctors = instances.map(instance => instance.constructor as ConstructorType);
+        const ctor = new this(...ctors);
+        // @ts-ignore <To complex for tsc to understand what's happenning here.>
+        return new ctor(...instances);
     }
 
     mix<U extends ConstructorType[]>(
         ...others: U
-    ): Mixture<T & InstanceIntersection<U>> {
-        const cons = (this as object).constructor as typeof Mixture;
-        return new cons(...this.constructors, ...others);
+    ): Mixture<[...T, ...U]> {
+        const cons = this.constructor as typeof Mixture;
+        return new cons<[...T, ...U]>(...this.ctors, ...others);
     }
 
     ctorUnion(ctor: ConstructorType): Set<ConstructorType> {
-        const mix = Mixture.from(ctor);
-        return this.constructors.union(mix.constructors);
+        const mix = new Mixture(ctor);
+        return this.ctorSet.union(mix.ctorSet);
     }
 
     ctorIntxt(ctor: ConstructorType): Set<ConstructorType> {
-        const mix = Mixture.from(ctor);
-        return this.constructors.intersection(mix.constructors);
+        const mix = new Mixture(ctor);
+        return this.ctorSet.intersection(mix.ctorSet);
     }
 
     equals(ctor: ConstructorType): boolean {
@@ -192,7 +198,7 @@ export class Mixture<T = unknown> {
 function* flatPrototype(ctor: ConstructorType) {
     let ptr = ctor;
     while (ptr) {
-        if (ptr instanceof Mixture) yield* ptr.constructors;
+        if (ptr instanceof Mixture) yield* ptr.ctors;
         if (!(SYMBOL_NON_INGREDIENT in ptr)) yield ptr;
         ptr = Object.getPrototypeOf(ptr);
     }
